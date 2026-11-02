@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="hr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Najava partneru</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+	<style>
+		:root {
+			--bg: #eef0f5;
+			--card: #ffffff;
+			--ink: #1b1d3a;
+			--text: #2c2f4a;
+			--muted: #7a7f99;
+			--line: #e3e6ef;
+			--soft: #f6f7fb;
+			--brand: #262a6b;
+			--primary: #1b84ff;
+			--success: #17c653;
+			--success-light: #dfffea;
+			--warning: #b08800;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: Inter, system-ui, sans-serif;
+			font-size: 13px;
+			line-height: 1.5;
+		}
+
+		.toolbar {
+			position: sticky;
+			top: 0;
+			z-index: 2;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 16px;
+			background: #1e1e2d;
+			color: #fff;
+		}
+
+		.toolbar .spacer { flex: 1; }
+
+		.toolbar button {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 7px 12px;
+			border: 0;
+			border-radius: 6px;
+			background: var(--primary);
+			color: #fff;
+			font: inherit;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.toolbar button.is-light { background: rgba(255, 255, 255, 0.12); }
+		.toolbar button:disabled { opacity: 0.5; cursor: default; }
+
+		.mail {
+			width: 760px;
+			max-width: calc(100% - 32px);
+			margin: 20px auto 40px;
+			background: var(--card);
+			border-radius: 12px;
+			box-shadow: 0 8px 30px rgba(20, 22, 60, 0.1);
+			overflow: hidden;
+		}
+
+		.sent-banner {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 24px;
+			background: var(--success-light);
+			color: #0c7a35;
+			font-weight: 600;
+		}
+
+		.sent-banner[hidden] { display: none; }
+
+		.mail-head {
+			padding: 16px 24px;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.mail-head-row { display: flex; gap: 10px; padding: 3px 0; }
+		.mail-head-row .label { width: 64px; flex: none; color: var(--muted); }
+		.mail-head-row .value { color: var(--ink); font-weight: 500; }
+		.mail-head-row .hint { color: var(--muted); font-weight: 400; }
+		.mail-subject { font-weight: 700; }
+
+		.mail-body { padding: 20px 24px 24px; }
+		.mail-body p { margin: 0 0 12px; }
+
+		.service-title {
+			margin: 0 0 14px;
+			padding: 10px 14px;
+			background: var(--soft);
+			border-left: 3px solid var(--brand);
+			border-radius: 6px;
+			color: var(--ink);
+			font-weight: 700;
+		}
+
+		.service-title span { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+
+		.groups {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 12px;
+			margin-bottom: 16px;
+		}
+
+		.group-block {
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			overflow: hidden;
+		}
+
+		.group-name {
+			padding: 8px 14px;
+			background: var(--brand);
+			color: #fff;
+			font-weight: 700;
+		}
+
+		.group-name i { margin-right: 6px; opacity: 0.8; }
+
+		.group-facts { margin: 0; padding: 8px 14px 10px; }
+
+		.group-facts div {
+			display: grid;
+			grid-template-columns: 22px 104px minmax(0, 1fr);
+			align-items: baseline;
+			padding: 4px 0;
+		}
+
+		.group-facts div + div { border-top: 1px dashed var(--line); }
+		.group-facts i { color: var(--muted); }
+		.group-facts dt { color: var(--muted); }
+		.group-facts dd { margin: 0; color: var(--ink); font-weight: 600; }
+		.group-facts .is-missing { color: var(--warning); }
+
+		.free-text-label {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			margin-bottom: 6px;
+			color: var(--muted);
+			font-size: 12px;
+			font-weight: 600;
+		}
+
+		textarea {
+			width: 100%;
+			min-height: 90px;
+			margin-bottom: 14px;
+			padding: 10px 12px;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			color: var(--text);
+			font: inherit;
+			resize: vertical;
+			outline: 1px solid rgba(220, 38, 38, 0.45);
+			outline-offset: 1px;
+		}
+
+		textarea:focus { border-color: var(--primary); }
+
+		.signature { color: var(--muted); font-size: 12px; }
+		.signature strong { display: block; color: var(--ink); font-size: 13px; }
+
+		.empty { padding: 40px 16px; color: var(--muted); text-align: center; }
+
+		@media (max-width: 640px) {
+			.mail-head, .mail-body, .sent-banner { padding-left: 16px; padding-right: 16px; }
+			.groups { grid-template-columns: minmax(0, 1fr); }
+			.group-facts div { grid-template-columns: 22px 90px minmax(0, 1fr); }
+		}
+	</style>
+</head>
+<body>
+	<div class="toolbar">
+		<i class="fa-solid fa-envelope"></i>
+		<span id="toolbar-title">Najava partneru</span>
+		<span class="spacer"></span>
+		<button type="button" class="is-light" onclick="window.close()"><i class="fa-solid fa-xmark"></i> Zatvori</button>
+		<button type="button" id="send-button"><i class="fa-solid fa-paper-plane"></i> <span>Pošalji najavu</span></button>
+	</div>
+
+	<main class="mail" id="mail"></main>
+
+	<script src="data.js"></script>
+	<script>
+		const ADDED_SERVICES_KEY = 'raster-prototype-added-services';
+		const DELETED_SERVICES_KEY = 'raster-prototype-deleted-services';
+		const GROUPS_KEY = 'raster-prototype-groups';
+		const TIMELINE_ITEMS_KEY = 'raster-prototype-timeline-items';
+		const SERVICE_STATUSES_KEY = 'raster-prototype-service-statuses';
+		const FREE_TEXTS_KEY = 'raster-prototype-partner-announcement-texts';
+
+		const ANNOUNCED_STATUS = 'announced';
+		const WEEKDAYS = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota'];
+
+		function readStoredJson(key) {
+			try {
+				return JSON.parse(localStorage.getItem(key)) || {};
+			} catch (error) {
+				return {};
+			}
+		}
+
+		function writeStoredJson(key, value) {
+			try {
+				localStorage.setItem(key, JSON.stringify(value));
+			} catch (error) {
+				// storage unavailable, the preview still renders
+			}
+		}
+
+		/** Groups saved before a group could have several drivers still carry driverName / driverPhone. */
+		function driversOf(group) {
+			if (group.drivers) {
+				return group.drivers;
+			}
+
+			return group.driverName || group.driverPhone ? [{ name: group.driverName || '', phone: group.driverPhone || '' }] : [];
+		}
+
+		function fullDate(value) {
+			const [year, month, day] = value.split('-');
+
+			return day + '.' + month + '.' + year + '.';
+		}
+
+		function weekdayOf(value) {
+			const [year, month, day] = value.split('-').map(Number);
+
+			return WEEKDAYS[new Date(year, month - 1, day).getDay()];
+		}
+
+		function formatSentAt(value) {
+			const sentAt = new Date(value);
+			const twoDigits = number => String(number).padStart(2, '0');
+
+			return twoDigits(sentAt.getDate()) + '.' + twoDigits(sentAt.getMonth() + 1) + '. u ' + twoDigits(sentAt.getHours()) + ':' + twoDigits(sentAt.getMinutes());
+		}
+
+		/** "09:00" → "09.00h", a range → "10.30–12.00h". */
+		function formatTime(startsAt, endsAt) {
+			const toDots = time => time.replace(':', '.');
+
+			if (!startsAt) {
+				return 'vrijeme naknadno';
+			}
+
+			return endsAt ? toDots(startsAt) + '–' + toDots(endsAt) + 'h' : toDots(startsAt) + 'h';
+		}
+
+		function element(tagName, className, text) {
+			const node = document.createElement(tagName);
+
+			if (className) {
+				node.className = className;
+			}
+
+			if (text !== undefined && text !== null) {
+				node.textContent = text;
+			}
+
+			return node;
+		}
+
+		function icon(name) {
+			return element('i', 'fa-solid ' + name);
+		}
+
+		/** The itinerary item of the usluga and its day, including services added after the data export ("Dodaj uslugu"). */
+		function serviceOf(offer, serviceId) {
+			for (const day of offer.days) {
+				const item = day.items.find(existing => existing.id === serviceId);
+
+				if (item) {
+					return { ...item, date: day.date };
+				}
+			}
+
+			const addedItem = (readStoredJson(ADDED_SERVICES_KEY)[offer.id] || []).find(existing => existing.id === serviceId);
+
+			return addedItem || null;
+		}
+
+		function guidesOf(row) {
+			return (row.guideIds || [])
+				.map(guideId => window.TOUR_GUIDES.find(guide => guide.id === guideId))
+				.filter(Boolean);
+		}
+
+		function paxLabelOf(row, guides, drivers) {
+			return (Number.isFinite(row.pax) ? row.pax + ' pax' : 'pax naknadno')
+				+ (guides.length ? ' + vodič' : '')
+				+ (drivers.length ? ' + vozač' : '');
+		}
+
+		function renderGroupBlock(group, row) {
+			const block = element('section', 'group-block');
+			const name = element('div', 'group-name');
+			const facts = element('dl', 'group-facts');
+			const guides = guidesOf(row);
+			const drivers = driversOf(group);
+			const addFact = (iconName, label, value, isMissing = false) => {
+				const fact = element('div');
+
+				fact.append(icon(iconName), element('dt', null, label), element('dd', isMissing ? 'is-missing' : null, value));
+				facts.appendChild(fact);
+			};
+
+			name.append(icon('fa-bus'), group.name);
+			addFact('fa-calendar-day', 'Dan i vrijeme', weekdayOf(row.date) + ', ' + fullDate(row.date) + ' u ' + formatTime(row.startsAt, row.endsAt));
+			addFact('fa-users', 'Broj gostiju', paxLabelOf(row, guides, drivers), !Number.isFinite(row.pax));
+			addFact('fa-user-tie', 'Vodič', guides.length
+				? guides.map(guide => guide.name + (guide.phone ? ' ' + guide.phone : '')).join(', ')
+				: 'nije još dodijeljen', !guides.length);
+			addFact('fa-id-card', 'Vozač', drivers.length
+				? drivers.map(driver => (driver.name || 'Vozač') + (driver.phone ? ' ' + driver.phone : '')).join(', ')
+				: 'TBA', !drivers.length);
+
+			if (row.meetingPoint) {
+				addFact('fa-location-dot', 'Mjesto', row.meetingPoint);
+			}
+
+			block.append(name, facts);
+
+			return block;
+		}
+
+		/** Marks the usluga's rows in every group as announced and sets its status to "Najavljeno", like the raster used to. */
+		function markAsSent(offer, serviceId) {
+			const sentAt = new Date().toISOString();
+			const timelineItemsByOffer = readStoredJson(TIMELINE_ITEMS_KEY);
+			const serviceStatuses = readStoredJson(SERVICE_STATUSES_KEY);
+
+			timelineItemsByOffer[offer.id] = (timelineItemsByOffer[offer.id] || []).map(row => row.offerDayItemId !== serviceId ? row : {
+				...row,
+				partnerAnnouncedAt: sentAt,
+				status: row.status === ANNOUNCED_STATUS ? null : row.status,
+			});
+			serviceStatuses[serviceId] = ANNOUNCED_STATUS;
+			writeStoredJson(TIMELINE_ITEMS_KEY, timelineItemsByOffer);
+			writeStoredJson(SERVICE_STATUSES_KEY, serviceStatuses);
+
+			return sentAt;
+		}
+
+		function renderAnnouncement() {
+			const parameters = new URLSearchParams(location.search);
+			const offer = window.OFFERS.find(existing => existing.id === parameters.get('offer'));
+			const service = offer ? serviceOf(offer, parameters.get('service')) : null;
+			const mail = document.getElementById('mail');
+			const sendButton = document.getElementById('send-button');
+
+			if (!offer || !service) {
+				mail.appendChild(element('div', 'empty', 'Usluga nije pronađena — otvori najavu s Rastera usluga.'));
+				sendButton.disabled = true;
+
+				return;
+			}
+
+			const groups = readStoredJson(GROUPS_KEY)[offer.id] || [];
+			const isDeleted = (readStoredJson(DELETED_SERVICES_KEY)[offer.id] || []).includes(service.id);
+			const rows = (readStoredJson(TIMELINE_ITEMS_KEY)[offer.id] || []).filter(row => row.offerDayItemId === service.id);
+			const groupRows = groups
+				.flatMap(group => rows.filter(row => row.groupId === group.id).map(row => ({ group, row })))
+				.sort((first, second) => (first.row.date + (first.row.startsAt || '99:99')).localeCompare(second.row.date + (second.row.startsAt || '99:99')));
+			const freeTexts = readStoredJson(FREE_TEXTS_KEY);
+			const sentAt = rows.find(row => row.partnerAnnouncedAt)?.partnerAnnouncedAt || null;
+
+			document.title = 'Najava partneru · ' + service.name;
+			document.getElementById('toolbar-title').textContent = 'Najava partneru · ' + offer.ref + ' · ' + service.name;
+
+			const banner = element('div', 'sent-banner');
+
+			banner.append(icon('fa-circle-check'), 'Najava poslana ' + (sentAt ? formatSentAt(sentAt) : ''));
+			banner.hidden = !sentAt;
+
+			const head = element('div', 'mail-head');
+			const addHeadRow = (label, value, hint, className) => {
+				const row = element('div', 'mail-head-row');
+				const valueCell = element('div', 'value' + (className ? ' ' + className : ''), value);
+
+				if (hint) {
+					valueCell.appendChild(element('span', 'hint', ' ' + hint));
+				}
+
+				row.append(element('div', 'label', label), valueCell);
+				head.appendChild(row);
+			};
+
+			addHeadRow('Od', 'operations@travel-tilago.hr');
+			addHeadRow('Za', 'Partner usluge', '(email iz kontakta usluge)');
+			addHeadRow('Predmet', 'Najava grupe ' + offer.client.name + ' · ' + fullDate(service.date) + ' · ' + service.name, null, 'mail-subject');
+
+			const body = element('div', 'mail-body');
+			const serviceTitle = element('div', 'service-title', service.name);
+			const groupsGrid = element('div', 'groups');
+			const freeTextLabel = element('label', 'free-text-label');
+			const freeText = element('textarea');
+			const signature = element('div', 'signature');
+
+			serviceTitle.appendChild(element('span', null, offer.ref + ' · ' + offer.client.name + (service.serviceHour ? ' · planirano ' + service.serviceHour : '')));
+			groupRows.forEach(({ group, row }) => groupsGrid.appendChild(renderGroupBlock(group, row)));
+
+			freeTextLabel.htmlFor = 'free-text';
+			freeTextLabel.append(icon('fa-pen'), 'Slobodni tekst');
+			freeText.id = 'free-text';
+			freeText.maxLength = 2500;
+			freeText.placeholder = 'npr. degustacijski paket: 3 vina, uštipci, pršut i sir · 2 pax vegetarijanci · vodič dolazi s našim vaučerom';
+			freeText.value = freeTexts[offer.id]?.[service.id] || '';
+			freeText.addEventListener('input', () => {
+				const latestTexts = readStoredJson(FREE_TEXTS_KEY);
+
+				latestTexts[offer.id] = { ...latestTexts[offer.id], [service.id]: freeText.value };
+				writeStoredJson(FREE_TEXTS_KEY, latestTexts);
+			});
+
+			signature.append(element('strong', null, 'Travel TILAGO · Operations'), 'operations@travel-tilago.hr · +385 91 6189 394');
+
+			body.append(
+				element('p', null, 'Poštovani,'),
+				element('p', null, groupRows.length > 1 ? 'šaljem najavu za grupe:' : 'šaljem najavu za grupu:'),
+				serviceTitle,
+				groupRows.length ? groupsGrid : element('p', 'empty', 'Usluga još nije na timelineu nijedne grupe.'),
+				freeTextLabel,
+				freeText,
+				element('p', null, 'Ljubazno molim pisanu potvrdu termina.'),
+				element('p', null, 'Lijep pozdrav / Schöne Grüße / Best regards'),
+				signature,
+			);
+
+			mail.append(banner, head, body);
+
+			sendButton.querySelector('span').textContent = sentAt ? 'Pošalji ponovno' : 'Pošalji najavu';
+			sendButton.disabled = !groupRows.length || isDeleted;
+			sendButton.addEventListener('click', () => {
+				if (!confirm('Poslati najavu partneru za "' + service.name + '"?')) {
+					return;
+				}
+
+				const newSentAt = markAsSent(offer, service.id);
+
+				banner.lastChild.textContent = 'Najava poslana ' + formatSentAt(newSentAt);
+				banner.hidden = false;
+				sendButton.querySelector('span').textContent = 'Pošalji ponovno';
+			});
+		}
+
+		renderAnnouncement();
+	</script>
+</body>
+</html>

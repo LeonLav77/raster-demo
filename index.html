@@ -1,0 +1,3565 @@
+<!doctype html>
+<html lang="hr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Raster Usluga Prototip</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+	<style>
+		:root {
+			--bg: #f5f8fa;
+			--card: #ffffff;
+			--border: #e4e6ef;
+			--border-soft: #eff2f5;
+			--text: #181c32;
+			--text-muted: #a1a5b7;
+			--text-gray: #5e6278;
+			--primary: #1b84ff;
+			--primary-light: #e9f3ff;
+			--success: #17c653;
+			--success-light: #dfffea;
+			--warning: #f6c000;
+			--warning-light: #fff8dd;
+			--danger: #f8285a;
+			--danger-light: #ffeef3;
+			--info: #7239ea;
+			--info-light: #f8f5ff;
+			--dark: #1e2129;
+			--item-bg: rgba(141, 158, 172, 0.18);
+			--radius: 0.625rem;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: Inter, system-ui, sans-serif;
+			font-size: 13px;
+		}
+
+		button { font-family: inherit; }
+
+		[x-cloak] { display: none !important; }
+
+		/* header */
+		.app-header {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			height: 64px;
+			padding: 0 24px;
+			background: var(--card);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.app-logo {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-weight: 700;
+			font-size: 16px;
+		}
+
+		.app-logo i {
+			display: grid;
+			place-items: center;
+			width: 32px;
+			height: 32px;
+			border-radius: 8px;
+			background: var(--primary);
+			color: #fff;
+			font-size: 15px;
+		}
+
+		.app-header .crumb {
+			color: var(--text-muted);
+			font-weight: 500;
+		}
+
+		.app-header .demo-reset { margin-left: auto; }
+
+		.app-nav { display: flex; gap: 4px; }
+
+		.app-nav a {
+			padding: 8px 12px;
+			border-radius: 8px;
+			color: var(--text-gray);
+			font-weight: 600;
+			text-decoration: none;
+		}
+
+		.app-nav a:hover { color: var(--primary); }
+		.app-nav a.active { background: var(--primary-light); color: var(--primary); }
+
+		.container {
+			max-width: 1680px;
+			margin: 0 auto;
+			padding: 24px;
+		}
+
+		/* questions */
+		.questions { margin-bottom: 20px; }
+
+		.questions-toggle {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			width: 100%;
+			padding: 16px 24px;
+			border: 0;
+			background: transparent;
+			color: var(--text);
+			text-align: left;
+			cursor: pointer;
+		}
+
+		.questions .card-title i { color: #b08800; }
+
+		.question-list {
+			margin: 0;
+			padding: 0 24px 16px;
+			list-style: none;
+		}
+
+		.question-list li {
+			padding: 12px 0;
+			border-top: 1px solid var(--border-soft);
+		}
+
+		.question-head {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			gap: 10px;
+		}
+
+		.question-number {
+			display: grid;
+			place-items: center;
+			flex: none;
+			width: 22px;
+			height: 22px;
+			border-radius: 50%;
+			background: var(--warning-light);
+			color: #b08800;
+			font-size: 11px;
+			font-weight: 700;
+		}
+
+		.question-answer {
+			margin-top: 6px;
+			color: #04a03a;
+			font-weight: 500;
+		}
+
+		/* view picker */
+		.view-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			margin-bottom: 20px;
+		}
+
+		.view-picker {
+			display: inline-flex;
+			gap: 4px;
+			padding: 4px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+		}
+
+		.view-picker button {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 18px;
+			border: 0;
+			border-radius: 8px;
+			background: transparent;
+			color: var(--text-gray);
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.view-picker button:hover { color: var(--primary); }
+
+		.view-picker button.active {
+			background: var(--primary);
+			color: #fff;
+		}
+
+		/* notifications */
+		.notifications { position: relative; }
+
+		.notification-bell {
+			position: relative;
+			display: grid;
+			place-items: center;
+			width: 48px;
+			height: 48px;
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			background: var(--card);
+			color: var(--text-gray);
+			font-size: 18px;
+			cursor: pointer;
+		}
+
+		.notification-bell:hover,
+		.notification-bell.active { color: var(--primary); border-color: var(--primary); }
+
+		.notification-bell.is-ringing i { animation: bell-ring 0.9s ease-in-out 2; }
+
+		@keyframes bell-ring {
+			0%, 100% { transform: rotate(0); }
+			15% { transform: rotate(16deg); }
+			30% { transform: rotate(-14deg); }
+			45% { transform: rotate(10deg); }
+			60% { transform: rotate(-8deg); }
+			75% { transform: rotate(4deg); }
+		}
+
+		.notification-count {
+			position: absolute;
+			top: -6px;
+			right: -6px;
+			min-width: 20px;
+			height: 20px;
+			padding: 0 6px;
+			border-radius: 10px;
+			background: var(--danger);
+			color: #fff;
+			font-size: 11px;
+			font-weight: 700;
+			line-height: 20px;
+		}
+
+		.notification-panel {
+			position: absolute;
+			top: calc(100% + 8px);
+			right: 0;
+			z-index: 30;
+			width: 360px;
+			max-width: calc(100vw - 32px);
+			max-height: 420px;
+			overflow-y: auto;
+			padding: 6px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+		}
+
+		.notification-panel:not(.is-open) { display: none; }
+
+		.notification-panel-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 8px 10px 10px;
+			border-bottom: 1px solid var(--border-soft);
+			margin-bottom: 4px;
+		}
+
+		.notification-item {
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+			width: 100%;
+			padding: 10px;
+			border: 0;
+			border-radius: 8px;
+			background: transparent;
+			color: var(--text);
+			text-align: left;
+			cursor: pointer;
+		}
+
+		.notification-item:hover { background: var(--border-soft); }
+		.notification-item.is-unread { background: var(--primary-light); }
+		.notification-item > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+		.notification-message { line-height: 1.35; }
+
+		.notification-icon {
+			display: grid;
+			place-items: center;
+			flex: 0 0 28px;
+			height: 28px;
+			border-radius: 8px;
+			font-size: 12px;
+		}
+
+		.notification-icon.is-added { background: var(--success-light); color: var(--success); }
+		.notification-icon.is-removed { background: var(--danger-light); color: var(--danger); }
+
+		/* cards */
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			box-shadow: 0 3px 4px rgba(0, 0, 0, 0.03);
+		}
+
+		.card-header {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 18px 24px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.card-title {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin: 0;
+			font-size: 17px;
+			font-weight: 600;
+		}
+
+		.card-title i { color: var(--primary); }
+
+		.card-header-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.card-body { padding: 24px; }
+
+		/* badges & buttons */
+		.badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 4px 8px;
+			border-radius: 6px;
+			font-size: 11px;
+			font-weight: 600;
+			line-height: 1;
+			white-space: nowrap;
+		}
+
+		.badge-primary { background: var(--primary-light); color: var(--primary); }
+		.badge-success { background: var(--success-light); color: #04a03a; }
+		.badge-warning { background: var(--warning-light); color: #b08800; }
+		.badge-danger { background: var(--danger-light); color: var(--danger); }
+		.badge-info { background: var(--info-light); color: var(--info); }
+		.badge-dark { background: var(--dark); color: #fff; }
+		.badge-light { background: var(--border-soft); color: var(--text-gray); }
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 14px;
+			border: 0;
+			border-radius: 8px;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			white-space: nowrap;
+		}
+
+		.btn-light { background: var(--border-soft); color: var(--text-gray); }
+		.btn-light:hover { background: var(--border); }
+		.btn-info { background: var(--info); color: #fff; }
+		.btn-light-primary { background: var(--primary-light); color: var(--primary); }
+		.btn-light-primary:hover { background: var(--primary); color: #fff; }
+
+		.btn-xs {
+			padding: 4px 8px;
+			border-radius: 6px;
+			font-size: 11px;
+		}
+
+		.btn-dashed {
+			background: transparent;
+			border: 1px dashed var(--border);
+			color: var(--text-muted);
+		}
+
+		.btn-dashed:hover {
+			border-color: var(--primary);
+			color: var(--primary);
+		}
+
+		.btn-dashed.is-guide-required {
+			border-color: var(--warning);
+			background: var(--warning-light);
+			color: #b08800;
+		}
+
+		.form-select, .form-input {
+			max-width: 100%;
+			padding: 9px 12px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--card);
+			color: var(--text);
+			font-family: inherit;
+			font-size: 13px;
+		}
+
+		.muted { color: var(--text-muted); }
+		.gray { color: var(--text-gray); }
+		.fw-semibold { font-weight: 600; }
+		.fs-sm { font-size: 11px; }
+		.nowrap { white-space: nowrap; }
+
+		/* offer header (itinerary view) */
+		.offer-meta {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+			gap: 16px;
+		}
+
+		.offer-meta .label {
+			margin-bottom: 4px;
+			color: var(--text-muted);
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+		}
+
+		.offer-meta .value { font-weight: 600; }
+
+		.cms-tabs {
+			display: flex;
+			gap: 28px;
+			padding: 0 24px;
+			border-bottom: 1px solid var(--border);
+			overflow-x: auto;
+		}
+
+		.cms-tabs span {
+			padding: 16px 0;
+			color: var(--text-muted);
+			font-weight: 600;
+			white-space: nowrap;
+		}
+
+		.cms-tabs span.active {
+			color: var(--primary);
+			box-shadow: inset 0 -2px 0 var(--primary);
+		}
+
+		/* itinerary days */
+		.day {
+			margin: 16px 0;
+			padding: 14px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+		}
+
+		.day-head {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+		}
+
+		.day-head strong { font-size: 17px; }
+
+		.day-head .actions { display: flex; gap: 8px; }
+
+		.item-card {
+			position: relative;
+			margin: 14px 0;
+			padding: 16px 20px;
+			border-radius: var(--radius);
+			background: var(--item-bg);
+		}
+
+		.item-card h5 {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin: 0 0 8px;
+			font-size: 15px;
+			font-weight: 600;
+		}
+
+		.item-card .row { margin: 3px 0; }
+
+		.item-card .row strong { font-weight: 600; }
+
+		.item-card .item-actions {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			display: flex;
+			gap: 6px;
+		}
+
+		.item-card .item-actions button {
+			display: grid;
+			place-items: center;
+			width: 28px;
+			height: 28px;
+			border: 0;
+			border-radius: 6px;
+			cursor: pointer;
+		}
+
+		.item-card.contingent {
+			background: var(--primary-light);
+			border: 1px dashed #b5d5ff;
+		}
+
+		.room-chips {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			margin-top: 6px;
+		}
+
+		.day-fields {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 10px;
+			margin-top: 12px;
+		}
+
+		.day-fields label {
+			display: block;
+			margin-bottom: 4px;
+			color: var(--text-gray);
+			font-size: 12px;
+			font-weight: 600;
+		}
+
+		.day-fields .field {
+			padding: 9px 12px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--card);
+			white-space: pre-line;
+		}
+
+		.day-fields .field.description {
+			max-height: 120px;
+			overflow-y: auto;
+			color: var(--text-gray);
+		}
+
+		/* raster */
+		.raster-toolbar {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			align-items: center;
+		}
+
+		.raster-scroll { overflow-x: auto; }
+
+		table.raster {
+			width: 100%;
+			min-width: 1500px;
+			border-collapse: collapse;
+		}
+
+		table.raster > thead > tr > th {
+			padding: 10px 8px;
+			background: #f9f9f9;
+			color: var(--text-gray);
+			font-size: 11px;
+			font-weight: 600;
+			text-align: left;
+			text-transform: uppercase;
+			letter-spacing: 0.02em;
+			vertical-align: bottom;
+			white-space: nowrap;
+			border-bottom: 1px solid var(--border);
+		}
+
+		table.raster > thead > tr.subhead > th {
+			padding-top: 0;
+			font-size: 10px;
+			text-transform: none;
+			letter-spacing: 0;
+		}
+
+		table.raster > thead th.usluge-head {
+			background: var(--primary-light);
+			color: var(--primary);
+		}
+
+		table.raster > thead th.usluge-head td {
+			padding: 10px 8px;
+			line-height: 1.25;
+			white-space: normal;
+			vertical-align: bottom;
+			border-bottom: 0;
+		}
+
+		table.raster > tbody > tr > td {
+			padding: 12px 8px;
+			vertical-align: top;
+			border-bottom: 1px solid var(--border);
+		}
+
+		table.raster > tbody > tr:hover > td { background: #fcfcfd; }
+
+		table.raster td.usluge-cell {
+			padding: 0;
+			background: #fbfcff;
+			border-left: 1px solid var(--border);
+			border-right: 1px solid var(--border);
+		}
+
+		table.usluge {
+			width: 100%;
+			border-collapse: collapse;
+			table-layout: fixed;
+		}
+
+		table.usluge td {
+			padding: 8px;
+			vertical-align: middle;
+			border-bottom: 1px solid var(--border-soft);
+		}
+
+		table.usluge tr:last-child td { border-bottom: 0; }
+
+		.col-usluga { width: 250px; }
+		.col-vodic { width: 140px; }
+		.col-price { width: 82px; }
+		.col-price .cell-input { padding: 4px 6px; }
+		.col-status { width: 120px; }
+		.col-najava { width: 128px; }
+		.col-racun { width: 92px; }
+		.invoice-cell { display: flex; align-items: center; gap: 4px; }
+		.invoice-add { padding: 3px 6px; }
+
+		.usluga-name {
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			font-weight: 600;
+			line-height: 1.35;
+		}
+
+		.ref-link {
+			color: var(--text);
+			font-weight: 600;
+			text-decoration: none;
+		}
+
+		.ref-link:hover { color: var(--primary); }
+
+		.check {
+			display: inline-grid;
+			place-items: center;
+			width: 20px;
+			height: 20px;
+			border: 1px solid var(--border);
+			border-radius: 5px;
+			background: var(--card);
+			cursor: pointer;
+		}
+
+		.check:hover { border-color: var(--primary); }
+
+		.empty-row {
+			padding: 18px;
+			color: var(--text-muted);
+			text-align: center;
+		}
+
+		.status-toggle {
+			border: 0;
+			cursor: pointer;
+			font-family: inherit;
+		}
+
+		.status-toggle:hover { filter: brightness(0.96); }
+
+		.status-difference {
+			margin-top: 4px;
+			color: var(--primary);
+			font-size: 11px;
+			font-weight: 600;
+			line-height: 1.3;
+		}
+
+		.dropdown-menu {
+			position: fixed;
+			z-index: 20;
+			min-width: 160px;
+			padding: 6px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+		}
+
+		.dropdown-menu button {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			width: 100%;
+			padding: 7px 8px;
+			border: 0;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--primary);
+			cursor: pointer;
+		}
+
+		.dropdown-menu button:hover { background: var(--border-soft); }
+
+		.service-menu { width: 330px; }
+		.service-menu button { text-align: left; color: var(--text); }
+
+		/* services added after the raster was made */
+		.badge-new { background: var(--success); color: #fff; }
+		tr.is-new-service td { background: var(--success-light); }
+		tr.is-new-service td.col-usluga { box-shadow: inset 3px 0 0 var(--success); }
+		.draggable-service.is-new-service { border-color: var(--success); background: var(--success-light); }
+
+		/* services deleted from the itinerary but kept in the raster and timeline */
+		.badge-deleted { background: var(--danger); color: #fff; }
+		tr.is-deleted-service td { background: var(--danger-light); }
+		tr.is-deleted-service td.col-usluga { box-shadow: inset 3px 0 0 var(--danger); }
+		.is-deleted-service .usluga-name,
+		.timeline-row.is-deleted-service .timeline-activity > .fw-semibold { text-decoration: line-through; color: var(--text-gray); }
+		.timeline-row.is-deleted-service { background: var(--danger-light); box-shadow: inset 3px 0 0 var(--danger); }
+
+		/* timeline */
+		.timeline-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) 320px;
+			gap: 20px;
+			align-items: start;
+		}
+
+		.timeline-main { min-width: 0; }
+
+		.timeline-groups {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+			padding: 14px 24px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.group-filter {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 12px;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			background: var(--card);
+			color: var(--text-gray);
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.group-filter:hover { border-color: var(--primary); }
+
+		.group-filter.active {
+			border-color: var(--primary);
+			background: var(--primary-light);
+			color: var(--primary);
+		}
+
+		.timeline-scroll {
+			padding: 0 24px 24px;
+			overflow-x: auto;
+		}
+
+		.timeline-grid {
+			display: grid;
+			grid-template-columns: 84px 84px 60px minmax(200px, 2fr) 150px 130px minmax(140px, 1fr) 120px 28px;
+			gap: 8px;
+			min-width: 1084px;
+		}
+
+		.timeline-row {
+			align-items: center;
+			padding: 6px 8px;
+			border-top: 1px solid var(--border-soft);
+		}
+
+		.timeline-row:hover { background: #fafbfc; }
+
+		.cell-input {
+			width: 100%;
+			min-width: 0;
+			padding: 6px 8px;
+			border: 1px solid transparent;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--text);
+			font-family: inherit;
+			font-size: 12px;
+		}
+
+		.cell-input:hover { border-color: var(--border); }
+
+		.cell-input:focus {
+			border-color: var(--primary);
+			background: var(--card);
+			outline: none;
+		}
+
+		.timeline-activity {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			line-height: 1.3;
+		}
+
+		.timeline-activity > span:last-child {
+			display: flex;
+			gap: 4px;
+		}
+
+		.row-remove {
+			display: grid;
+			place-items: center;
+			width: 26px;
+			height: 26px;
+			border: 0;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--text-muted);
+			cursor: pointer;
+		}
+
+		.row-remove:hover { background: var(--danger-light); color: var(--danger); }
+
+		.cell-input:disabled {
+			color: var(--text-gray);
+			cursor: default;
+		}
+
+		.cell-input:disabled:hover { border-color: transparent; }
+
+		.timeline-banner {
+			padding: 10px 24px;
+			background: #f9fafb;
+			border-bottom: 1px solid var(--border);
+			color: var(--text-gray);
+		}
+
+		.timeline-banner > div {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.timeline-banner i { color: var(--primary); }
+
+		.timeline-day.drag-over { background: var(--primary-light); }
+
+		.timeline-day.drag-over .timeline-drop {
+			border-color: var(--primary);
+			color: var(--primary);
+		}
+
+		.timeline-drop.compact {
+			margin-top: 6px;
+			padding: 8px;
+			font-size: 12px;
+		}
+
+		.timeline-head {
+			padding: 12px 8px;
+			color: var(--text-gray);
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.02em;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.timeline-day {
+			min-width: 1084px;
+			border-bottom: 1px solid var(--border-soft);
+		}
+
+		.day-note {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 0 8px 8px 30px;
+		}
+
+		.day-note i { color: var(--text-muted); }
+		.day-note .cell-input { flex: 1; font-style: italic; }
+
+		.timeline-day-head {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			width: 100%;
+			padding: 12px 8px;
+			border: 0;
+			background: transparent;
+			color: var(--text);
+			font-size: 14px;
+			text-align: left;
+			cursor: pointer;
+		}
+
+		.timeline-day-head i {
+			width: 12px;
+			color: var(--text-muted);
+		}
+
+		.timeline-drop {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			margin: 0 8px 12px;
+			padding: 14px;
+			border: 1px dashed var(--border);
+			border-radius: 8px;
+			color: var(--text-muted);
+			font-weight: 500;
+		}
+
+		.timeline-sidebar {
+			position: sticky;
+			top: 16px;
+			display: flex;
+			flex-direction: column;
+			max-height: calc(100vh - 32px);
+		}
+
+		.timeline-sidebar .card-header { padding: 14px 16px; }
+
+		.timeline-sidebar-body {
+			padding: 8px 12px 12px;
+			overflow-y: auto;
+		}
+
+		.sidebar-day {
+			margin: 10px 4px 6px;
+			color: var(--text-muted);
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+		}
+
+		.draggable-service {
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+			margin-bottom: 6px;
+			padding: 10px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--card);
+			line-height: 1.35;
+			cursor: grab;
+		}
+
+		.draggable-service:hover {
+			border-color: var(--primary);
+			box-shadow: 0 2px 6px rgba(27, 132, 255, 0.12);
+		}
+
+		.draggable-service.dragging { opacity: 0.45; }
+
+		.draggable-service .muted.fs-sm {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px;
+			margin-top: 4px;
+		}
+
+		@media (max-width: 1000px) {
+			.timeline-layout { grid-template-columns: minmax(0, 1fr); }
+			.timeline-sidebar { position: static; max-height: none; }
+		}
+
+		/* guides */
+		.guide-cell {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 3px;
+			width: 100%;
+			padding: 4px 6px;
+			border: 1px solid transparent;
+			border-radius: 6px;
+			background: transparent;
+			cursor: pointer;
+		}
+
+		.guide-cell:hover { border-color: var(--primary); }
+
+		.guide-name {
+			color: var(--text);
+			font-size: 12px;
+			font-weight: 500;
+			line-height: 1.25;
+			text-align: left;
+		}
+
+		.guide-menu {
+			position: fixed;
+			z-index: 20;
+			display: flex;
+			flex-direction: column;
+			width: 290px;
+			max-height: 380px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+		}
+
+		.guide-menu-search { padding: 8px; border-bottom: 1px solid var(--border-soft); }
+		.guide-menu-search .form-input { width: 100%; }
+
+		.guide-menu-list {
+			flex: 1;
+			padding: 4px;
+			overflow-y: auto;
+		}
+
+		.guide-option {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 6px 8px;
+			border-radius: 6px;
+			cursor: pointer;
+		}
+
+		.guide-option:hover { background: var(--border-soft); }
+
+		.guide-option input { accent-color: var(--primary); }
+		.guide-region { margin-left: 6px; color: var(--text-gray); }
+		.guide-region i { color: var(--primary); font-size: 10px; }
+
+		.guide-rating {
+			color: #b08800;
+			font-size: 11px;
+			font-weight: 600;
+			white-space: nowrap;
+		}
+
+		.guide-menu-footer {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 8px;
+			border-top: 1px solid var(--border-soft);
+		}
+
+		/* groups */
+		.group-list {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
+
+		.group-chip {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 2px;
+			min-width: 110px;
+			padding: 6px 8px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--card);
+			color: var(--text);
+			font-size: 12px;
+			text-align: left;
+			cursor: pointer;
+		}
+
+		.group-chip:hover { border-color: var(--primary); }
+
+		.group-chip i { color: var(--primary); }
+
+		.group-chip-wrap { position: relative; }
+
+		.group-chip .no-driver,
+		.group-chip .no-driver i { color: #b08800; }
+
+		.driver-form-row {
+			display: grid;
+			grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 36px;
+			gap: 8px;
+			margin-bottom: 8px;
+		}
+
+		.driver-form-row .driver-note { grid-column: 1 / 3; }
+
+		.driver-form-row + .driver-form-row {
+			padding-top: 8px;
+			border-top: 1px dashed var(--border);
+		}
+
+		.driver-remove { padding: 0; }
+
+		.group-remove {
+			position: absolute;
+			top: -7px;
+			right: -7px;
+			display: grid;
+			place-items: center;
+			width: 18px;
+			height: 18px;
+			padding: 0;
+			border: 1px solid var(--border);
+			border-radius: 50%;
+			background: var(--card);
+			color: var(--text-muted);
+			font-size: 10px;
+			cursor: pointer;
+			opacity: 0;
+			transition: opacity 0.15s;
+		}
+
+		.group-chip-wrap:hover .group-remove,
+		.group-remove:focus-visible { opacity: 1; }
+
+		.group-remove:hover {
+			border-color: var(--danger);
+			background: var(--danger);
+			color: #fff;
+		}
+
+		@media (hover: none) {
+			.group-remove { opacity: 1; }
+		}
+
+		/* modal */
+		.modal-backdrop {
+			position: fixed;
+			inset: 0;
+			z-index: 30;
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 80px 16px 16px;
+			background: rgba(0, 0, 0, 0.35);
+		}
+
+		.modal {
+			width: 100%;
+			max-width: 460px;
+			background: var(--card);
+			border-radius: 12px;
+			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+		}
+
+		.modal-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 18px 24px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.modal-header h3 {
+			margin: 0;
+			font-size: 17px;
+			font-weight: 600;
+		}
+
+		.modal-close {
+			border: 0;
+			background: transparent;
+			color: var(--text-muted);
+			font-size: 18px;
+			cursor: pointer;
+		}
+
+		.modal-body { padding: 20px 24px 8px; }
+
+		.modal-footer {
+			display: flex;
+			gap: 8px;
+			padding: 16px 24px;
+			border-top: 1px solid var(--border);
+		}
+
+		.form-group { margin-bottom: 14px; }
+
+		.form-group label {
+			display: block;
+			margin-bottom: 6px;
+			color: var(--text-gray);
+			font-size: 12px;
+			font-weight: 600;
+		}
+
+		.form-group .form-input { width: 100%; }
+
+		.modal.modal-wide { max-width: 600px; }
+
+		.upload-dropzone {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 6px;
+			padding: 22px 16px;
+			border: 1px dashed #b5d5ff;
+			border-radius: 10px;
+			background: var(--primary-light);
+			color: var(--primary);
+			text-align: center;
+			cursor: pointer;
+		}
+
+		.upload-dropzone:hover, .upload-dropzone.is-dragging { border-color: var(--primary); }
+		.upload-dropzone i { font-size: 22px; }
+		.upload-dropzone .muted { color: var(--text-muted); }
+
+		.upload-count { margin: 16px 0 8px; font-weight: 600; }
+
+		.upload-file {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 6px 8px;
+			align-items: center;
+			padding: 10px 0;
+			border-top: 1px solid var(--border-soft);
+		}
+
+		.upload-file .finance-file-name { min-width: 0; }
+		.upload-file .form-input { grid-column: 1 / -1; width: 100%; }
+
+		.btn-primary { background: var(--primary); color: #fff; }
+		.btn-primary:hover { background: #056ee9; }
+		.btn-success { background: var(--success); color: #fff; }
+		.btn-success:hover { background: #04a03a; }
+		.btn-light-danger { background: var(--danger-light); color: var(--danger); }
+		.btn-light-danger:hover { background: var(--danger); color: #fff; }
+
+		/* activities */
+		.sidebar-section-title {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin: 14px 4px 8px;
+			color: var(--text);
+			font-size: 13px;
+			font-weight: 700;
+		}
+
+		.sidebar-section-title:first-child { margin-top: 4px; }
+
+		.new-activity {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			margin-bottom: 8px;
+		}
+
+		.new-activity .form-input {
+			flex: 1;
+			min-width: 0;
+			padding: 7px 10px;
+		}
+
+		.activity-card { align-items: center; }
+
+		.btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		/* overlays toggle by class rather than x-show, whose deferred show can outlive a quick close */
+		.dropdown-menu:not(.is-open),
+		.guide-menu:not(.is-open),
+		.modal-backdrop:not(.is-open) {
+			display: none;
+		}
+
+		/* toast */
+		.toast {
+			position: fixed;
+			right: 20px;
+			bottom: 20px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			max-width: calc(100vw - 40px);
+			padding: 12px 16px;
+			border-radius: 10px;
+			background: var(--dark);
+			color: #fff;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			font-weight: 500;
+		}
+
+		@media (max-width: 640px) {
+			.container { padding: 16px; }
+			.app-header { padding: 0 16px; }
+			.app-header .crumb { display: none; }
+			.card-body { padding: 16px; }
+			.view-picker { display: flex; flex: 1; min-width: 0; }
+			.view-picker button i { display: none; }
+			.notification-bell { width: 44px; height: 44px; }
+			.view-picker button { flex: 1; justify-content: center; padding: 10px 8px; }
+		}
+
+		/** Presentation aid: a faint blue outline on values calculated from other data (sums, collected guides). */
+		.calculated-value {
+			display: inline-block;
+			padding: 2px 6px;
+			border-radius: 6px;
+			outline: 1px solid rgba(27, 132, 255, 0.5);
+			outline-offset: 1px;
+		}
+
+		/* finance documents (per offer) */
+		table.finance-files {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 13px;
+		}
+
+		table.finance-files th {
+			padding: 10px 12px;
+			border-bottom: 1px solid var(--border);
+			color: var(--text-muted);
+			font-size: 11px;
+			font-weight: 600;
+			text-align: left;
+			text-transform: uppercase;
+		}
+
+		table.finance-files td {
+			padding: 10px 12px;
+			border-bottom: 1px solid var(--border-soft);
+			vertical-align: middle;
+		}
+
+		table.finance-files tr:last-child td { border-bottom: 0; }
+
+		.finance-file-name {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			color: var(--text);
+			font-weight: 600;
+			text-decoration: none;
+			word-break: break-word;
+		}
+
+		.finance-file-name:hover { color: var(--primary); }
+		.finance-file-name i { color: var(--danger); font-size: 16px; }
+		.finance-file-actions { display: flex; justify-content: flex-end; gap: 6px; }
+		.finance-file-status { display: flex; align-items: center; gap: 6px; }
+		.finance-file-note { color: var(--text-gray); white-space: pre-line; }
+		.finance-file-source { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+
+		/* timeline notes (per group, rich text) */
+		.timeline-notes {
+			margin: 0 24px 24px;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+		}
+
+		.timeline-notes-head {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 14px;
+			border-bottom: 1px solid var(--border-soft);
+		}
+
+		.timeline-notes-head h3 { margin: 0; font-size: 14px; }
+		.timeline-notes-head h3 i { margin-right: 6px; color: var(--primary); }
+
+		.rte-toolbar {
+			display: flex;
+			gap: 2px;
+			margin-left: auto;
+		}
+
+		.rte-toolbar button {
+			width: 30px;
+			height: 28px;
+			border: 0;
+			border-radius: 6px;
+			background: transparent;
+			color: var(--text-gray);
+			cursor: pointer;
+		}
+
+		.rte-toolbar button:hover { background: var(--border-soft); color: var(--text); }
+
+		.rte-editor {
+			min-height: 120px;
+			padding: 12px 14px;
+			font-size: 13px;
+			line-height: 1.55;
+			outline: none;
+		}
+
+		.rte-editor:empty::before {
+			content: attr(data-placeholder);
+			color: var(--text-muted);
+		}
+
+		.rte-editor p { margin: 0 0 6px; }
+		.rte-editor ul, .rte-editor ol { margin: 0 0 6px; padding-left: 20px; }
+
+		/** Presentation aid: a faint red outline on everything that edits data (navigation, filters and drag cards excluded). */
+		button:not(:disabled):not(.view-picker button, .group-filter, .group-remove, .timeline-day-head, .questions-toggle, .dropdown-menu button, .demo-reset, .notification-bell, .notification-item, .rte-toolbar button),
+		input:not(:disabled):not(.raster-toolbar input),
+		select:not(:disabled):not(.raster-toolbar select),
+		textarea:not(:disabled),
+		.check,
+		.rte-editor {
+			outline: 1px solid rgba(220, 38, 38, 0.45);
+			outline-offset: 1px;
+		}
+	</style>
+	<script src="data.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+</head>
+<body>
+	<header class="app-header">
+		<div class="app-logo"><i class="fa-solid fa-route"></i> Tilago CMS</div>
+		<nav class="app-nav">
+			<a href="index.html" class="active">Prototip</a>
+			<a href="schema.html">DB shema</a>
+		</nav>
+		<button type="button" class="btn btn-light demo-reset" title="Vraća prototip na stanje prije dodavanja novih usluga" onclick="resetToBaseline()">
+			<i class="fa-solid fa-rotate-left"></i> Reset
+		</button>
+	</header>
+
+	<main class="container" x-data="prototype()" x-cloak>
+		<section class="card questions" x-show="questions.length">
+			<button type="button" class="questions-toggle" @click="isQuestionsOpen = !isQuestionsOpen">
+				<h2 class="card-title">
+					<i class="fa-solid fa-circle-question"></i> Otvorena pitanja
+					<span class="badge badge-warning" x-text="openQuestionCount + ' / ' + questions.length"></span>
+				</h2>
+				<i class="fa-solid muted" :class="isQuestionsOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+			</button>
+			<ol class="question-list" x-show="isQuestionsOpen">
+				<template x-for="(question, index) in questions" :key="index">
+					<li>
+						<div class="question-head">
+							<span class="question-number" x-text="index + 1"></span>
+							<div style="flex: 1 1 220px">
+								<div class="fw-semibold" x-text="question.question"></div>
+								<div class="muted fs-sm" x-show="question.context" x-text="question.context"></div>
+								<div class="question-answer" x-show="question.answer">
+									<i class="fa-solid fa-check"></i> <span x-text="question.answer"></span>
+								</div>
+							</div>
+							<span class="badge badge-light" x-text="question.topic"></span>
+							<span class="badge" :class="question.answer ? 'badge-success' : 'badge-warning'" x-text="question.answer ? 'Odgovoreno' : 'Otvoreno'"></span>
+						</div>
+					</li>
+				</template>
+			</ol>
+		</section>
+
+		<div class="view-bar">
+			<div class="view-picker">
+				<button type="button" :class="{ active: view === 'itinerary' }" @click="setView('itinerary')">
+					<i class="fa-solid fa-map-location-dot"></i> Itinerar ponude
+				</button>
+				<button type="button" :class="{ active: view === 'raster' }" @click="setView('raster')">
+					<i class="fa-solid fa-table-list"></i> Raster usluga
+				</button>
+				<button type="button" :class="{ active: view === 'timeline' }" @click="setView('timeline')">
+					<i class="fa-solid fa-timeline"></i> Timeline
+				</button>
+				<button type="button" :class="{ active: view === 'finance' }" @click="setView('finance')">
+					<i class="fa-solid fa-file-invoice-dollar"></i> Financije
+				</button>
+			</div>
+
+			<div class="notifications" @click.outside="closeNotifications()" @keydown.escape.window="closeNotifications()">
+				<button type="button" class="notification-bell" :class="{ 'is-ringing': isBellRinging, active: isNotificationsOpen }"
+					title="Obavijesti" @click="isNotificationsOpen ? closeNotifications() : isNotificationsOpen = true">
+					<i class="fa-regular fa-bell"></i>
+					<span class="notification-count" x-show="unreadNotificationCount > 0" x-text="unreadNotificationCount"></span>
+				</button>
+
+				<div class="notification-panel" :class="{ 'is-open': isNotificationsOpen }">
+					<div class="notification-panel-head">
+						<strong>Obavijesti</strong>
+						<span class="muted fs-sm" x-text="unreadNotificationCount + ' nepročitano'"></span>
+					</div>
+					<template x-for="notification in notifications" :key="notification.id">
+						<button type="button" class="notification-item" :class="{ 'is-unread': !notification.isRead }" @click="openNotification(notification)">
+							<span class="notification-icon" :class="'is-' + notification.type">
+								<i class="fa-solid" :class="notification.type === 'removed' ? 'fa-minus' : 'fa-plus'"></i>
+							</span>
+							<span style="flex: 1; min-width: 0">
+								<span class="fw-semibold" x-text="notification.title"></span>
+								<span class="notification-message" x-text="notification.message"></span>
+								<span class="muted fs-sm" x-text="notification.detail + ' · ' + formatNotificationTime(notification.createdAt)"></span>
+							</span>
+						</button>
+					</template>
+					<div class="empty-row" x-show="notifications.length === 0">Nema obavijesti</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ITINERARY -->
+		<section x-show="view === 'itinerary'">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title">
+						<i class="fa-solid fa-file-signature"></i>
+						<span x-text="'Ponuda ' + selectedOffer.ref"></span>
+						<span class="badge" :class="offerStatus(selectedOffer).class" x-text="offerStatus(selectedOffer).label"></span>
+					</h2>
+				</div>
+
+				<div class="card-body">
+					<div class="offer-meta">
+						<div>
+							<div class="label">Naziv</div>
+							<div class="value" x-text="selectedOffer.name || '—'"></div>
+						</div>
+						<div>
+							<div class="label">Klijent</div>
+							<div class="value" x-text="selectedOffer.client.name"></div>
+						</div>
+						<div>
+							<div class="label">KAM</div>
+							<div class="value" x-text="selectedOffer.kam || '—'"></div>
+						</div>
+						<div>
+							<div class="label">Termin</div>
+							<div class="value" x-text="formatDate(selectedOffer.departure) + ' – ' + formatDate(selectedOffer.return)"></div>
+						</div>
+						<div>
+							<div class="label">Hotel</div>
+							<template x-for="hotel in selectedOffer.hotels" :key="hotel.name">
+								<div class="value" x-text="hotel.name + ', ' + hotel.city + ' · ' + hotel.nights + 'n ' + hotel.board"></div>
+							</template>
+						</div>
+						<div>
+							<div class="label">Pax</div>
+							<div class="value" x-text="pax(selectedOffer).count + ' (' + pax(selectedOffer).source + ')'"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="cms-tabs">
+					<span>Osnovni podaci</span>
+					<span>Kontingent</span>
+					<span class="active">Itinerar</span>
+					<span>Izračun</span>
+					<span>Rooming lista</span>
+					<span>Vaučeri</span>
+				</div>
+
+				<div class="card-body">
+					<template x-for="(day, dayIndex) in selectedOffer.days" :key="day.date">
+						<div class="day">
+							<div class="day-head">
+								<strong x-text="'Dan ' + (dayIndex + 1) + ': ' + formatDate(day.date)"></strong>
+								<div class="actions">
+									<button type="button" class="btn btn-light" @click.stop="openServiceMenu($event, day)">
+										<i class="fa fa-plus"></i> Dodaj uslugu
+									</button>
+									<button type="button" class="btn btn-info" @click="comingSoon('Dodaj vodiča')">
+										<i class="fa fa-plus"></i> Dodaj vodiča
+									</button>
+								</div>
+							</div>
+
+							<template x-if="contingentFor(day)">
+								<div class="item-card contingent">
+									<h5><i class="fa-solid fa-hotel" style="color: var(--primary)"></i> Kontingent</h5>
+									<div class="row">
+										<strong>Hotel:</strong>
+										<span x-text="contingentFor(day).hotel + ' · ' + contingentFor(day).board"></span>
+									</div>
+									<div class="room-chips">
+										<template x-for="room in contingentFor(day).rooms" :key="room.type">
+											<span class="badge badge-primary" x-text="roomTypeLabel(room.type) + ' · ' + money(room.purchase)"></span>
+										</template>
+									</div>
+								</div>
+							</template>
+
+							<template x-for="item in day.items.filter(item => item.type !== 'room' && !item.isDeleted)" :key="item.id">
+								<div class="item-card">
+									<div class="item-actions">
+										<button type="button" style="background: #e1e3ea" @click="comingSoon('Uredi stavku')"><i class="fa fa-edit" style="color: var(--primary)"></i></button>
+										<button type="button" style="background: var(--danger); color: #fff" @click="item.type === 'service' ? deleteService(day, item) : comingSoon('Obriši stavku')"><i class="fa fa-trash"></i></button>
+									</div>
+									<h5>
+										<span x-text="item.type === 'service' ? 'Usluga' : 'Vodič'"></span>
+										<template x-if="item.isOptional">
+											<span class="badge badge-warning">Fakultativna usluga</span>
+										</template>
+										<template x-if="item.serviceType && item.serviceType !== 'other'">
+											<span class="badge badge-light" x-text="serviceTypeLabel(item.serviceType)"></span>
+										</template>
+									</h5>
+									<div class="row"><strong>Naziv:</strong> <span x-text="item.name"></span></div>
+									<div class="row"><strong>Nabavna cijena:</strong> <span x-text="money(item.purchase)"></span></div>
+									<div class="row"><strong>Prodajna cijena:</strong> <span x-text="item.selling != null ? money(item.selling) : '-'"></span></div>
+									<div class="row"><strong>Tekst vaučera:</strong> <span x-text="item.voucherSubtext || '-'"></span></div>
+									<div class="row"><strong>Sat usluge:</strong> <span x-text="item.serviceHour || '-'"></span></div>
+								</div>
+							</template>
+
+							<div class="day-fields">
+								<div>
+									<label>Naziv dana</label>
+									<div class="field" x-text="day.name || '—'"></div>
+								</div>
+								<template x-if="day.description">
+									<div>
+										<label>Opis dana</label>
+										<div class="field description" x-text="day.description"></div>
+									</div>
+								</template>
+							</div>
+						</div>
+					</template>
+				</div>
+			</div>
+		</section>
+
+		<!-- RASTER USLUGA -->
+		<section x-show="view === 'raster'">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title"><i class="fa-solid fa-table-list"></i> Raster usluga</h2>
+					<div class="raster-toolbar">
+						<input type="search" class="form-input" placeholder="Pretraži ID, klijenta, hotel…" x-model="search">
+						<select class="form-select" x-model="statusFilter">
+							<option value="">Svi statusi</option>
+							<option value="placed">Plasirano</option>
+							<option value="accepted">Prihvaćeno</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="raster-scroll" @scroll="statusMenu = null; guideMenu = null">
+					<table class="raster">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Hotel</th>
+								<th>Prijava</th>
+								<th>Odjava</th>
+								<th>Klijent</th>
+								<th>KAM</th>
+								<th>Uk. Pax</th>
+								<th>Status</th>
+								<th>Grupe</th>
+								<th>Vodiči</th>
+								<th>Ostali računi</th>
+								<th class="usluge-head" style="padding: 0;">
+									<table class="usluge">
+										<tr>
+											<td class="col-usluga">Usluga</td>
+											<td class="col-vodic">Vodič</td>
+											<td class="col-price" title="Stvarna nabavna cijena (analitika) — uspoređuje se s nabavnom iz ponude (sivo) za ispravak kalkulacije">IN</td>
+											<td class="col-price" title="Stvarna prodajna cijena (analitika) — uspoređuje se s prodajnom iz ponude (sivo) za ispravak kalkulacije">OUT</td>
+											<td class="col-status">Status usluge</td>
+											<td class="col-najava">Najava partneru</td>
+											<td class="col-racun">Račun usluga</td>
+										</tr>
+									</table>
+								</th>
+								<th>Spremno za<br>zatvaranje</th>
+							</tr>
+						</thead>
+						<tbody>
+							<template x-for="offer in filteredOffers" :key="offer.id">
+								<tr>
+									<td class="nowrap">
+										<a href="#" class="ref-link" @click.prevent="openItinerary(offer)" x-text="offer.ref"></a>
+									</td>
+									<td style="min-width: 170px;">
+										<template x-for="hotel in offer.hotels" :key="hotel.name">
+											<div>
+												<div class="fw-semibold" x-text="hotel.name"></div>
+												<div class="muted fs-sm" x-text="hotel.city"></div>
+												<span class="badge badge-primary" style="margin-top: 4px" x-text="hotel.nights + 'n · ' + hotel.board"></span>
+											</div>
+										</template>
+									</td>
+									<td class="nowrap" x-text="formatDate(offer.hotels[0]?.checkIn || offer.departure)"></td>
+									<td class="nowrap" x-text="formatDate(offer.hotels[0]?.checkOut || offer.return)"></td>
+									<td style="min-width: 140px;">
+										<div class="fw-semibold" x-text="offer.client.name"></div>
+										<div class="muted fs-sm" x-text="offer.client.country"></div>
+									</td>
+									<td class="nowrap" x-text="offer.kam || '—'"></td>
+									<td class="nowrap">
+										<div class="fw-semibold" x-text="pax(offer).count"></div>
+										<div class="muted fs-sm" x-text="pax(offer).source"></div>
+									</td>
+									<td><span class="badge" :class="offerStatus(offer).class" x-text="offerStatus(offer).label"></span></td>
+									<td>
+										<div class="group-list">
+											<template x-for="group in groupsOf(offer)" :key="group.id">
+												<div class="group-chip-wrap">
+													<button type="button" class="group-chip" :title="driverContactsOf(group)" @click="openGroupModal(offer, group)">
+														<span class="fw-semibold"><i class="fa-solid fa-people-group"></i> <span x-text="group.name"></span></span>
+														<span class="muted fs-sm" x-show="group.drivers.length" x-text="driverNamesOf(group)"></span>
+														<span class="no-driver fs-sm" x-show="group.drivers.length === 0"><i class="fa-solid fa-triangle-exclamation"></i> Bez vozača</span>
+													</button>
+													<button type="button" class="group-remove" :title="'Obriši ' + group.name" @click="removeGroup(offer, group)">
+														<i class="fa-solid fa-xmark"></i>
+													</button>
+												</div>
+											</template>
+											<button type="button" class="btn btn-xs btn-dashed" @click="openGroupModal(offer)">
+												<i class="fa-solid fa-plus"></i> Grupa
+											</button>
+										</div>
+									</td>
+									<td style="min-width: 140px;" title="Svi vodiči ponude — s usluga i aktivnosti, svih grupa">
+										<div class="calculated-value">
+											<template x-for="guide in offerGuidesOf(offer)" :key="guide.id">
+												<div class="guide-name" x-text="guide.name"></div>
+											</template>
+											<span class="muted fs-sm" x-show="offerGuidesOf(offer).length === 0">—</span>
+										</div>
+									</td>
+									<td>
+										<button type="button" class="btn btn-xs btn-dashed nowrap" title="Učitaj ostale račune (PDF)" @click="openInvoiceModal(offer)">
+											<i class="fa-solid fa-upload"></i> PDF
+										</button>
+									</td>
+									<td class="usluge-cell">
+										<table class="usluge">
+											<template x-for="service in servicesOf(offer)" :key="service.id">
+												<tr :class="{ 'is-new-service': service.isNew && !service.isDeleted, 'is-deleted-service': service.isDeleted }">
+													<td class="col-usluga">
+														<div class="usluga-name" :title="service.name" x-text="service.name"></div>
+														<div class="muted fs-sm">
+															<span x-text="formatDate(service.date)"></span>
+															<template x-if="service.serviceHour"><span x-text="' · ' + service.serviceHour"></span></template>
+															<template x-if="service.isOptional"><span class="badge badge-warning" style="margin-left: 4px">F</span></template>
+															<template x-if="service.isNew && !service.isDeleted"><span class="badge badge-new" style="margin-left: 4px" title="Dodano u itinerar nakon izrade rastera">Nova usluga</span></template>
+															<template x-if="service.isDeleted"><span class="badge badge-deleted" style="margin-left: 4px" title="Obrisano iz itinerara — ostaje u rasteru radi praćenja">Obrisana usluga</span></template>
+														</div>
+													</td>
+													<td class="col-vodic" title="Vodiči se dodjeljuju u timelineu">
+														<div class="calculated-value">
+															<template x-for="guide in rasterGuidesOf(offer, service.id)" :key="guide.id">
+																<div class="guide-name" x-text="guide.name"></div>
+															</template>
+															<span class="badge badge-warning" x-show="rasterGuidesOf(offer, service.id).length === 0 && isServiceOnTimeline(offer, service.id)">Potreban vodič</span>
+															<span class="muted fs-sm" x-show="rasterGuidesOf(offer, service.id).length === 0 && !isServiceOnTimeline(offer, service.id)">—</span>
+														</div>
+													</td>
+													<td class="col-price">
+														<input type="number" min="0" step="0.01" class="cell-input" :placeholder="offerPriceOf(service, 'in')" :aria-label="'IN cijena · ' + service.name"
+															:title="'Nabavna u ponudi: ' + offerPriceOf(service, 'in')"
+															:value="servicePriceOf(service, 'in')" @change="setServicePrice(service, 'in', $event.target.value)">
+													</td>
+													<td class="col-price">
+														<input type="number" min="0" step="0.01" class="cell-input" :placeholder="offerPriceOf(service, 'out')" :aria-label="'OUT cijena · ' + service.name"
+															:title="'Prodajna u ponudi: ' + offerPriceOf(service, 'out')"
+															:value="servicePriceOf(service, 'out')" @change="setServicePrice(service, 'out', $event.target.value)">
+													</td>
+													<td class="col-status">
+														<button type="button" class="badge status-toggle" :class="serviceStatus(service.id).class" @click.stop="openStatusMenu($event, service.id)">
+															<span x-text="serviceStatus(service.id).label"></span>
+															<i class="fa-solid fa-chevron-down" style="font-size: 9px"></i>
+														</button>
+														<template x-for="differingGroup in groupsWithDifferentStatus(offer, service.id)" :key="differingGroup.name">
+															<div class="status-difference calculated-value" :title="differingGroup.name + ': ' + differingGroup.statusLabel"
+																x-text="differingGroup.name + ' – drugačiji status'"></div>
+														</template>
+													</td>
+													<td class="col-najava">
+														<button type="button" class="btn btn-xs btn-dashed nowrap" x-show="!service.isDeleted && isServiceOnTimeline(offer, service.id) && !partnerAnnouncedAtOf(offer, service.id)" @click="openPartnerAnnouncement(offer, service)">
+															<i class="fa-solid fa-envelope"></i> Najavi
+														</button>
+														<button type="button" class="badge badge-success status-toggle" x-show="partnerAnnouncedAtOf(offer, service.id)" @click="openPartnerAnnouncement(offer, service)"
+															:title="partnerAnnouncedAtOf(offer, service.id) ? 'Najava partneru poslana ' + formatNotificationTime(partnerAnnouncedAtOf(offer, service.id)) + ' — klik za pregled' : ''">
+															<i class="fa-solid fa-check"></i> Poslano
+														</button>
+														<span class="muted fs-sm" x-show="!partnerAnnouncedAtOf(offer, service.id) && (service.isDeleted || !isServiceOnTimeline(offer, service.id))" title="Najava se šalje kad je usluga na timelineu grupe">—</span>
+													</td>
+													<td class="col-racun">
+														<div class="invoice-cell">
+															<button type="button" class="btn btn-xs btn-dashed" x-show="serviceInvoicesOf(offer, service).length === 0" title="Učitaj PDF računa usluge" @click="openInvoiceModal(offer, service)">
+																<i class="fa-solid fa-upload"></i> PDF
+															</button>
+															<button type="button" class="badge badge-success status-toggle nowrap" x-show="serviceInvoicesOf(offer, service).length" title="Prikaži u Financijama" @click="openFinance(offer)">
+																<i class="fa-solid fa-check"></i> <span x-text="serviceInvoicesOf(offer, service).length + ' PDF'"></span>
+															</button>
+															<button type="button" class="btn btn-xs btn-dashed invoice-add" x-show="serviceInvoicesOf(offer, service).length" title="Učitaj još PDF-ova" @click="openInvoiceModal(offer, service)">
+																<i class="fa-solid fa-plus"></i>
+															</button>
+														</div>
+													</td>
+												</tr>
+											</template>
+											<template x-if="servicesOf(offer).length === 0">
+												<tr><td colspan="7" class="empty-row">Nema usluga u itineraru</td></tr>
+											</template>
+										</table>
+									</td>
+									<td style="text-align: center;">
+										<span class="check" @click="comingSoon('Spremno za zatvaranje')"></span>
+									</td>
+								</tr>
+							</template>
+							<template x-if="filteredOffers.length === 0">
+								<tr><td colspan="13" class="empty-row">Nema rezultata</td></tr>
+							</template>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<!-- TIMELINE -->
+		<section x-show="view === 'timeline'" class="timeline-layout">
+			<div class="card timeline-main">
+				<div class="card-header">
+					<h2 class="card-title">
+						<i class="fa-solid fa-timeline"></i>
+						<span x-text="'Timeline · ' + selectedOffer.ref"></span>
+					</h2>
+					<div class="card-header-actions" x-show="timelineGroup">
+						<button type="button" class="btn btn-light" @click="openTimelinePdf()">
+							<i class="fa-solid fa-file-pdf"></i> Timeline PDF
+						</button>
+						<button type="button" class="btn btn-primary" @click="comingSoon('Pošalji najavu')">
+							<i class="fa-solid fa-paper-plane"></i>
+							<span x-text="'Pošalji najavu · ' + (timelineGroup?.name || '')"></span>
+						</button>
+					</div>
+				</div>
+
+				<div class="timeline-groups">
+					<button type="button" class="group-filter" :class="{ active: timelineGroupId === null }" @click="timelineGroupId = null">
+						Sve grupe
+					</button>
+					<template x-for="group in groupsOf(selectedOffer)" :key="group.id">
+						<div class="group-chip-wrap">
+							<button type="button" class="group-filter" :class="{ active: timelineGroupId === group.id }" @click="timelineGroupId = group.id">
+								<i class="fa-solid fa-people-group"></i>
+								<span x-text="group.name"></span>
+								<span class="muted fs-sm" x-show="group.drivers.length" x-text="'· ' + driverNamesOf(group)"></span>
+								<span class="badge badge-info" x-show="group.isEditedSeparately">zasebno</span>
+							</button>
+							<button type="button" class="group-remove" :title="'Obriši ' + group.name" @click="removeGroup(selectedOffer, group)">
+								<i class="fa-solid fa-xmark"></i>
+							</button>
+						</div>
+					</template>
+					<button type="button" class="btn btn-xs btn-dashed" @click="openGroupModal(selectedOffer)">
+						<i class="fa-solid fa-plus"></i> Grupa
+					</button>
+					<span class="muted fs-sm" x-show="groupsOf(selectedOffer).length === 0">Ponuda još nema grupa</span>
+				</div>
+
+				<div class="timeline-banner" x-show="groupsOf(selectedOffer).length === 0">
+					<div>
+						<i class="fa-solid fa-circle-info"></i>
+						<span>Prikazane su usluge iz itinerara po danima. Dodaj grupu da kreneš uređivati — svaka nova grupa dobije ovaj timeline.</span>
+					</div>
+				</div>
+
+				<div class="timeline-banner" x-show="groupsOf(selectedOffer).length > 0">
+					<template x-if="!timelineGroup">
+						<div>
+							<i class="fa-solid fa-link"></i>
+							<span x-show="syncedGroupsOf(selectedOffer).length > 0">
+								Izmjene se primjenjuju na: <strong x-text="syncedGroupsOf(selectedOffer).map(group => group.name).join(', ')"></strong>.
+							</span>
+							<span x-show="syncedGroupsOf(selectedOffer).length === 0">Sve grupe se uređuju zasebno — odaberi grupu.</span>
+							<span class="muted" x-show="syncedGroupsOf(selectedOffer).length > 0 && syncedGroupsOf(selectedOffer).length < groupsOf(selectedOffer).length"
+								x-text="'Ne mijenjaju se (zasebno): ' + groupsOf(selectedOffer).filter(group => group.isEditedSeparately).map(group => group.name).join(', ')"></span>
+						</div>
+					</template>
+					<template x-if="timelineGroup && !timelineGroup.isEditedSeparately">
+						<div>
+							<i class="fa-solid fa-link"></i>
+							<span><strong x-text="timelineGroup.name"></strong> prati "Sve grupe" — izmjene se rade tamo. Pax, Vodič i Status upisuju se ovdje, po grupi.</span>
+							<button type="button" class="btn btn-xs btn-primary" @click="editGroupSeparately(timelineGroup)">
+								<i class="fa-solid fa-pen"></i> Uredi samo za ovu grupu
+							</button>
+						</div>
+					</template>
+					<template x-if="timelineGroup && timelineGroup.isEditedSeparately">
+						<div>
+							<i class="fa-solid fa-link-slash"></i>
+							<span><strong x-text="timelineGroup.name"></strong> se uređuje zasebno — izmjene u "Sve grupe" se na nju ne primjenjuju.</span>
+						</div>
+					</template>
+				</div>
+
+				<div class="timeline-scroll" @scroll="guideMenu = null; statusMenu = null">
+					<div class="timeline-grid timeline-head">
+						<span>Od</span>
+						<span>Do</span>
+						<span>Pax</span>
+						<span>Aktivnost</span>
+						<span>Vodič</span>
+						<span>Meeting point</span>
+						<span>Napomena</span>
+						<span>Status</span>
+						<span></span>
+					</div>
+
+					<template x-for="(day, dayIndex) in selectedOffer.days" :key="day.date">
+						<div class="timeline-day" :class="{ 'drag-over': dragOverDate === day.date }"
+							@dragover.prevent="dragOverDate = day.date" @dragleave="leaveDropDay($event, day.date)" @drop.prevent="dropService($event, day.date)">
+							<button type="button" class="timeline-day-head" @click="toggleTimelineDay(day.date)">
+								<i class="fa-solid" :class="isTimelineDayCollapsed(day.date) ? 'fa-chevron-right' : 'fa-chevron-down'"></i>
+								<strong x-text="'Dan ' + (dayIndex + 1) + ' · ' + formatDate(day.date)"></strong>
+								<span class="muted" x-text="day.name"></span>
+								<span class="badge badge-light" x-show="timelineRowsFor(day.date).length" x-text="timelineRowsFor(day.date).length"></span>
+							</button>
+							<div x-show="!isTimelineDayCollapsed(day.date)">
+								<div class="day-note" x-show="groupsOf(selectedOffer).length">
+									<i class="fa-regular fa-note-sticky" title="Kratki opis dana — ide na timeline PDF"></i>
+									<input type="text" maxlength="500" class="cell-input" :aria-label="'Opis dana ' + (dayIndex + 1)"
+										placeholder="Kratki opis dana za timeline PDF (npr. itinerar prema satnici partnera, vaučeri u privitku…)"
+										:disabled="!isTimelineEditable" :value="dayNoteOf(day.date)" @change="setDayNote(day.date, $event.target.value)">
+								</div>
+								<template x-for="row in timelineRowsFor(day.date)" :key="row.id">
+									<div class="timeline-grid timeline-row" :class="{ 'is-deleted-service': isServiceDeleted(row.offerDayItemId) }">
+										<input type="time" class="cell-input" :disabled="!isTimelineEditable" x-model.lazy="row.startsAt" @change="updateTimelineRow(row, 'startsAt')">
+										<input type="time" class="cell-input" :disabled="!isTimelineEditable" x-model.lazy="row.endsAt" @change="updateTimelineRow(row, 'endsAt')">
+										<input type="number" min="0" step="1" class="cell-input" placeholder="—" x-show="timelineGroup" x-model.number="row.pax" @change="persistTimeline()">
+										<span class="calculated-value" x-show="!timelineGroup" title="Zbroj paxa svih grupa" x-text="totalPaxOf(row) ?? '—'"></span>
+										<div class="timeline-activity">
+											<span class="fw-semibold" x-text="row.name"></span>
+											<span>
+												<span class="badge badge-deleted" x-show="isServiceDeleted(row.offerDayItemId)" title="Obrisano iz itinerara">Obrisana usluga</span>
+												<span class="badge badge-info" x-show="row.isActivity">Aktivnost</span>
+												<span class="badge badge-warning" x-show="row.isOptional">Fakultativno</span>
+											</span>
+										</div>
+										<div x-show="timelineGroup">
+											<button type="button" class="btn btn-xs btn-dashed" x-show="!(row.guideIds || []).length && row.isActivity" @click.stop="openGuideMenu($event, row)">
+												<i class="fa-solid fa-user-plus"></i> Nije definirano
+											</button>
+											<button type="button" class="btn btn-xs btn-dashed is-guide-required" x-show="!(row.guideIds || []).length && !row.isActivity" @click.stop="openGuideMenu($event, row)">
+												<i class="fa-solid fa-user-clock"></i> Potreban vodič
+											</button>
+											<button type="button" class="guide-cell" x-show="(row.guideIds || []).length" @click.stop="openGuideMenu($event, row)">
+												<template x-for="guide in guidesByIds(row.guideIds)" :key="guide.id">
+													<span class="guide-name" x-text="guide.name"></span>
+												</template>
+											</button>
+										</div>
+										<span class="muted fs-sm" x-show="!timelineGroup" title="Vodič se dodjeljuje po grupi">po grupi</span>
+										<input type="text" maxlength="255" class="cell-input" placeholder="—" :disabled="!isTimelineEditable" x-model="row.meetingPoint" @change="updateTimelineRow(row, 'meetingPoint')">
+										<input type="text" maxlength="255" class="cell-input" placeholder="—" :disabled="!isTimelineEditable" x-model="row.note" @change="updateTimelineRow(row, 'note')">
+										<div>
+											<button type="button" class="badge status-toggle" x-show="timelineGroup && !row.isActivity" :class="timelineRowStatus(row).class"
+												:title="row.status ? 'Status samo za ovu grupu' : 'Prati status usluge iz rastera'" @click.stop="openStatusMenu($event, row.offerDayItemId, row.id)">
+												<span x-text="timelineRowStatus(row).label"></span>
+												<i class="fa-solid fa-chevron-down" style="font-size: 9px"></i>
+											</button>
+											<span class="muted fs-sm" x-show="!timelineGroup && !row.isActivity" title="Status se vodi po grupi">po grupi</span>
+										</div>
+										<button type="button" class="row-remove" title="Ukloni iz timelinea" x-show="isTimelineEditable" @click="removeTimelineItem(row)"><i class="fa-solid fa-xmark"></i></button>
+									</div>
+								</template>
+								<div class="timeline-drop" :class="{ compact: timelineRowsFor(day.date).length }" x-show="isTimelineEditable">
+									<i class="fa-solid fa-arrow-down-long"></i>
+									<span x-text="timelineGroup ? 'Povuci uslugu ovdje (' + timelineGroup.name + ')' : 'Povuci uslugu ovdje (sve grupe)'"></span>
+								</div>
+							</div>
+						</div>
+					</template>
+				</div>
+
+				<div class="timeline-notes" x-show="timelineGroup">
+					<div class="timeline-notes-head">
+						<h3><i class="fa-solid fa-note-sticky"></i><span x-text="'Napomene za najavu · ' + (timelineGroup?.name || '')"></span></h3>
+						<span class="muted fs-sm">Ide u najavu vodiču, ne na timeline PDF</span>
+						<div class="rte-toolbar">
+							<button type="button" title="Podebljano" @mousedown.prevent="formatTimelineNotes('bold')"><i class="fa-solid fa-bold"></i></button>
+							<button type="button" title="Kurziv" @mousedown.prevent="formatTimelineNotes('italic')"><i class="fa-solid fa-italic"></i></button>
+							<button type="button" title="Podcrtano" @mousedown.prevent="formatTimelineNotes('underline')"><i class="fa-solid fa-underline"></i></button>
+							<button type="button" title="Popis" @mousedown.prevent="formatTimelineNotes('insertUnorderedList')"><i class="fa-solid fa-list-ul"></i></button>
+							<button type="button" title="Numerirani popis" @mousedown.prevent="formatTimelineNotes('insertOrderedList')"><i class="fa-solid fa-list-ol"></i></button>
+							<button type="button" title="Poveznica" @mousedown.prevent="addTimelineNotesLink()"><i class="fa-solid fa-link"></i></button>
+						</div>
+					</div>
+					<div class="rte-editor" contenteditable="true" x-ref="timelineNotesEditor"
+						data-placeholder="npr. rooming lista (link), prehrana (2 pax vegetarijanci), smještaj za vodiča, ostali izleti…"
+						x-effect="loadTimelineNotes($el, timelineGroupId)" @input="saveTimelineNotes($el)"></div>
+				</div>
+			</div>
+
+			<aside class="card timeline-sidebar">
+				<div class="card-header">
+					<h2 class="card-title"><i class="fa-solid fa-grip-vertical"></i> Usluge i aktivnosti</h2>
+				</div>
+				<div class="timeline-sidebar-body">
+					<div class="sidebar-section-title">Usluge</div>
+					<template x-for="(day, dayIndex) in selectedOffer.days" :key="day.date">
+						<div x-show="availableServicesOf(day).length > 0">
+							<div class="sidebar-day" x-text="'Dan ' + (dayIndex + 1) + ' · ' + formatDate(day.date)"></div>
+							<template x-for="item in availableServicesOf(day)" :key="item.id">
+								<div class="draggable-service" draggable="true"
+									:class="{ dragging: draggedServiceId === item.id, 'is-new-service': item.isNew }"
+									@dragstart="startServiceDrag($event, item)" @dragend="draggedServiceId = null">
+									<i class="fa-solid fa-grip-vertical muted"></i>
+									<div style="flex: 1; min-width: 0">
+										<div class="fw-semibold" x-text="item.name"></div>
+										<div class="muted fs-sm">
+											<span class="badge badge-new" x-show="item.isNew">Nova usluga</span>
+											<span x-show="item.serviceHour" x-text="item.serviceHour"></span>
+											<span class="badge badge-light" x-show="item.serviceType && item.serviceType !== 'other'" x-text="serviceTypeLabel(item.serviceType)"></span>
+											<span class="badge badge-warning" x-show="item.isOptional">F</span>
+										</div>
+									</div>
+								</div>
+							</template>
+						</div>
+					</template>
+					<div class="empty-row" x-show="servicesOf(selectedOffer).length === 0">Nema usluga u itineraru</div>
+					<div class="empty-row" x-show="servicesOf(selectedOffer).length > 0 && !selectedOffer.days.some(day => availableServicesOf(day).length > 0)">
+						<i class="fa-solid fa-check" style="color: var(--success)"></i>
+						<span x-text="timelineGroup ? 'Sve usluge su u timelineu grupe ' + timelineGroup.name : 'Sve usluge su u timelineu'"></span>
+					</div>
+
+					<div class="sidebar-section-title">
+						<span>Aktivnosti</span>
+						<button type="button" class="btn btn-xs btn-light-primary" @click="startAddingActivity()">
+							<i class="fa-solid fa-plus"></i> Aktivnost
+						</button>
+					</div>
+					<form class="new-activity" x-show="isAddingActivity" @submit.prevent="addActivity()">
+						<input type="text" class="form-input" maxlength="255" placeholder="Naziv aktivnosti…" x-ref="newActivityInput"
+							x-model="newActivityName" @keydown.escape.stop="isAddingActivity = false">
+						<button type="submit" class="btn btn-xs btn-primary" :disabled="!newActivityName.trim()">Dodaj</button>
+						<button type="button" class="row-remove" title="Odustani" @click="isAddingActivity = false"><i class="fa-solid fa-xmark"></i></button>
+					</form>
+					<template x-for="activity in activities" :key="activity.id">
+						<div class="draggable-service activity-card" draggable="true"
+							:class="{ dragging: draggedActivityId === activity.id }"
+							@dragstart="startActivityDrag($event, activity)" @dragend="draggedActivityId = null">
+							<i class="fa-solid fa-grip-vertical muted"></i>
+							<span class="fw-semibold" style="flex: 1; min-width: 0" x-text="activity.name.hr"></span>
+							<button type="button" class="row-remove" title="Obriši aktivnost" x-show="activity.isAddedHere" @click="deleteAddedActivity(activity.id)">
+								<i class="fa-solid fa-trash-can"></i>
+							</button>
+						</div>
+					</template>
+				</div>
+			</aside>
+		</section>
+
+		<!-- FINANCIJE -->
+		<section x-show="view === 'finance'">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title">
+						<i class="fa-solid fa-file-invoice-dollar"></i>
+						<span x-text="'Financije · ' + selectedOffer.ref"></span>
+					</h2>
+				</div>
+
+				<div class="card-body" style="padding-top: 0">
+					<table class="finance-files">
+						<thead>
+							<tr>
+								<th style="width: 110px">ID ponude</th>
+								<th>Datoteka</th>
+								<th style="width: 280px">Vrsta</th>
+								<th>Napomena</th>
+								<th style="width: 140px">Učitano</th>
+								<th style="width: 200px">Status</th>
+								<th style="width: 120px"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<template x-for="financeFile in financeFilesOf(selectedOffer)" :key="financeFile.id">
+								<tr>
+									<td>
+										<a href="#" class="ref-link" title="Otvori itinerar ponude" @click.prevent="openItinerary(selectedOffer)" x-text="selectedOffer.ref"></a>
+									</td>
+									<td>
+										<a href="#" class="finance-file-name" @click.prevent="openFinanceFile(financeFile)">
+											<i class="fa-solid fa-file-pdf"></i>
+											<span x-text="financeFile.name"></span>
+										</a>
+									</td>
+									<td>
+										<div class="finance-file-source" x-show="financeFile.serviceId">
+											<span class="badge badge-primary">Račun usluga</span>
+											<span class="muted fs-sm" x-text="financeFile.serviceName"></span>
+										</div>
+										<span class="badge badge-info" x-show="financeFile.kind === 'other'">Ostali računi</span>
+									</td>
+									<td>
+										<span class="finance-file-note" x-show="financeFile.note" x-text="financeFile.note"></span>
+										<span class="muted" x-show="!financeFile.note">—</span>
+									</td>
+									<td class="muted" x-text="formatNotificationTime(financeFile.uploadedAt)"></td>
+									<td>
+										<div class="finance-file-status">
+											<span class="badge badge-warning" x-show="!financeFile.completedAt">Novo</span>
+											<button type="button" class="btn btn-xs btn-success" x-show="!financeFile.completedAt" @click="completeFinanceFile(financeFile)">
+												<i class="fa-solid fa-check"></i> Završeno
+											</button>
+											<span class="badge badge-success" x-show="financeFile.completedAt"
+												:title="financeFile.completedAt ? 'Završeno ' + formatNotificationTime(financeFile.completedAt) : ''">
+												<i class="fa-solid fa-check"></i> Završeno
+											</span>
+										</div>
+									</td>
+									<td>
+										<div class="finance-file-actions">
+											<button type="button" class="btn btn-xs btn-light" title="Otvori" @click="openFinanceFile(financeFile)"><i class="fa-solid fa-eye"></i></button>
+										</div>
+									</td>
+								</tr>
+							</template>
+							<tr x-show="financeFilesOf(selectedOffer).length === 0">
+								<td colspan="7" class="empty-row">Još nema učitanih PDF-ova</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+
+		<div class="dropdown-menu service-menu" :class="{ 'is-open': serviceMenu }"
+			:style="serviceMenu ? { top: serviceMenu.top + 'px', left: serviceMenu.left + 'px' } : {}"
+			@click.outside="serviceMenu = null" @keydown.escape.window="serviceMenu = null" @scroll.window="serviceMenu = null" @resize.window="serviceMenu = null">
+			<template x-for="service in serviceMenuOptions" :key="service.name">
+				<button type="button" @click="addService(service)">
+					<span class="fw-semibold" x-text="service.name"></span>
+					<span class="badge badge-light" x-text="serviceTypeLabel(service.serviceType)"></span>
+				</button>
+			</template>
+			<div class="empty-row" x-show="serviceMenu && serviceMenuOptions.length === 0">Sve usluge su već na ovom danu</div>
+		</div>
+
+		<div class="dropdown-menu" :class="{ 'is-open': statusMenu }"
+			:style="statusMenu ? { top: statusMenu.top + 'px', left: statusMenu.left + 'px' } : {}"
+			@click.outside="statusMenu = null" @keydown.escape.window="statusMenu = null" @scroll.window="statusMenu = null" @resize.window="statusMenu = null">
+			<template x-for="(status, key) in serviceStatuses" :key="key">
+				<button type="button" @click="chooseStatus(key)">
+					<span class="badge" :class="status.class" x-text="status.label"></span>
+					<i class="fa-solid fa-check" x-show="statusMenuSelectedKey === key"></i>
+				</button>
+			</template>
+		</div>
+
+		<div class="guide-menu" :class="{ 'is-open': guideMenu }"
+			:style="guideMenu ? { top: guideMenu.top + 'px', left: guideMenu.left + 'px' } : {}"
+			@click.outside="guideMenu = null" @keydown.escape.window="guideMenu = null" @scroll.window="guideMenu = null" @resize.window="guideMenu = null">
+			<div class="guide-menu-search">
+				<input type="search" class="form-input" placeholder="Pretraži vodiče, jezik ili regiju…" x-model="guideSearch" x-ref="guideSearchInput">
+			</div>
+			<div class="guide-menu-list">
+				<template x-for="guide in guideOptions" :key="guide.id">
+					<label class="guide-option">
+						<input type="checkbox" :checked="isGuideSelected(guide.id)" @change="toggleGuide(guide.id)">
+						<span style="flex: 1">
+							<span class="fw-semibold" x-text="guide.name"></span>
+							<span class="muted fs-sm" style="display: block">
+								<span x-text="guide.languages"></span>
+								<span class="guide-region" x-show="guide.region"><i class="fa-solid fa-location-dot"></i> <span x-text="guide.region"></span></span>
+							</span>
+						</span>
+						<span class="guide-rating" x-text="'★ ' + guide.rating"></span>
+					</label>
+				</template>
+				<div class="empty-row" x-show="guideOptions.length === 0">Nema vodiča</div>
+			</div>
+			<div class="guide-menu-footer">
+				<span class="muted fs-sm" x-text="guideMenuRow ? (guideMenuRow.guideIds || []).length + ' odabrano' : ''"></span>
+				<button type="button" class="btn btn-xs btn-primary" @click="guideMenu = null">Gotovo</button>
+			</div>
+		</div>
+
+		<div class="modal-backdrop" :class="{ 'is-open': groupModal }" @click.self="groupModal = null" @keydown.escape.window="groupModal = null">
+			<template x-if="groupModal">
+				<form class="modal" @submit.prevent="saveGroup()">
+					<div class="modal-header">
+						<h3 x-text="groupModal?.groupId ? 'Uredi grupu' : 'Nova grupa'"></h3>
+						<button type="button" class="modal-close" @click="groupModal = null"><i class="fa-solid fa-xmark"></i></button>
+					</div>
+					<div class="modal-body">
+						<div class="muted" style="margin-bottom: 14px;" x-text="'Ponuda ' + groupModal?.offerRef + ' · jedna grupa = jedan timeline'"></div>
+						<div class="form-group">
+							<label for="group-name">Naziv grupe</label>
+							<input id="group-name" class="form-input" type="text" maxlength="255" required x-model="groupForm.name" x-init="$nextTick(() => $el.select())">
+						</div>
+						<div class="form-group">
+							<label>Vozači</label>
+							<template x-for="(driver, driverIndex) in groupForm.drivers" :key="driver.id">
+								<div class="driver-form-row">
+									<input class="form-input" type="text" maxlength="100" placeholder="Ime i prezime" :aria-label="'Vozač ' + (driverIndex + 1) + ' — ime'" x-model="driver.name">
+									<input class="form-input" type="tel" maxlength="20" placeholder="+385…" :aria-label="'Vozač ' + (driverIndex + 1) + ' — telefon'" x-model="driver.phone">
+									<button type="button" class="btn btn-light-danger driver-remove" title="Obriši vozača" @click="removeDriverFromForm(driver.id)"><i class="fa-solid fa-trash"></i></button>
+									<input class="form-input driver-note" type="text" maxlength="255" placeholder="Napomena za PDF (npr. vozi Dan 1–3, javlja se na licu mjesta)" :aria-label="'Vozač ' + (driverIndex + 1) + ' — napomena'" x-model="driver.note">
+								</div>
+							</template>
+							<div class="muted fs-sm" style="margin-bottom: 8px;" x-show="groupForm.drivers.length === 0">Još nema vozača — mogu se dodati i kasnije.</div>
+							<button type="button" class="btn btn-xs btn-dashed" @click="addDriverToForm()"><i class="fa-solid fa-plus"></i> Dodaj vozača</button>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-light-danger" x-show="groupModal?.groupId" @click="deleteGroup()">
+							<i class="fa-solid fa-trash"></i> Obriši
+						</button>
+						<span style="flex: 1"></span>
+						<button type="button" class="btn btn-light" @click="groupModal = null">Odustani</button>
+						<button type="submit" class="btn btn-primary">Spremi</button>
+					</div>
+				</form>
+			</template>
+		</div>
+
+		<div class="modal-backdrop" :class="{ 'is-open': invoiceModal }" @click.self="invoiceModal = null" @keydown.escape.window="invoiceModal = null">
+			<template x-if="invoiceModal">
+				<form class="modal modal-wide" @submit.prevent="saveInvoices()">
+					<div class="modal-header">
+						<h3 x-text="invoiceModal.service ? 'Račun usluga' : 'Ostali računi'"></h3>
+						<button type="button" class="modal-close" @click="invoiceModal = null"><i class="fa-solid fa-xmark"></i></button>
+					</div>
+					<div class="modal-body">
+						<div class="muted" style="margin-bottom: 14px;" x-text="'Ponuda ' + invoiceModal.offer.ref + ' · ' + (invoiceModal.service ? invoiceModal.service.name : 'ostali računi ponude')"></div>
+						<label class="upload-dropzone" :class="{ 'is-dragging': invoiceModal.isDragging }"
+							@dragover.prevent="invoiceModal.isDragging = true" @dragleave="invoiceModal.isDragging = false"
+							@drop.prevent="invoiceModal.isDragging = false; addInvoiceFiles($event.dataTransfer.files)">
+							<input type="file" accept="application/pdf" multiple hidden @change="addInvoiceFiles($event.target.files); $event.target.value = ''">
+							<i class="fa-solid fa-cloud-arrow-up"></i>
+							<strong>Odaberi ili povuci PDF-ove</strong>
+							<span class="muted fs-sm">Može više odjednom · svaki PDF je jedan red u Financijama</span>
+						</label>
+
+						<div x-show="invoiceModal.files.length">
+							<div class="upload-count" x-text="'Učitano PDF-ova: ' + invoiceModal.files.length"></div>
+							<template x-for="(uploadFile, uploadFileIndex) in invoiceModal.files" :key="uploadFile.id">
+								<div class="upload-file">
+									<span class="finance-file-name">
+										<i class="fa-solid fa-file-pdf"></i>
+										<span x-text="uploadFile.name"></span>
+									</span>
+									<button type="button" class="btn btn-xs btn-light-danger" title="Makni" @click="removeInvoiceFile(uploadFile.id)"><i class="fa-solid fa-xmark"></i></button>
+									<input class="form-input" type="text" maxlength="500" placeholder="Napomena (npr. akontacija, račun br. 2026-114…)"
+										:aria-label="'Napomena za ' + uploadFile.name" x-model="uploadFile.note">
+								</div>
+							</template>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<span style="flex: 1"></span>
+						<button type="button" class="btn btn-light" @click="invoiceModal = null">Odustani</button>
+						<button type="submit" class="btn btn-primary" :disabled="invoiceModal.files.length === 0">Spremi</button>
+					</div>
+				</form>
+			</template>
+		</div>
+
+		<div class="toast" x-show="toast" x-transition.opacity>
+			<i class="fa-solid fa-person-digging"></i>
+			<span x-text="toast"></span>
+		</div>
+	</main>
+
+	<script>
+		const ROOM_TYPE_LABELS = {
+			'single-room': '1/1',
+			'double-room': '1/2',
+			'double-for-solo-room': '1/2 za 1 osobu',
+			'tripple-room': '1/3',
+			'quad-room': '1/4',
+			'mobile-home': 'Mobilna kućica',
+		};
+
+		const SERVICE_TYPE_LABELS = {
+			'winery': 'Vinarija',
+			'museum': 'Muzej',
+			'restorants': 'Restoran',
+			'national-park': 'Nacionalni park',
+			'excursions': 'Izlet',
+			'free-time': 'Slobodno vrijeme',
+			'tickets': 'Ulaznice',
+			'other': 'Ostalo',
+		};
+
+		/** Stand-in for the CMS service list offered by "Dodaj uslugu". */
+		const SERVICE_CATALOG = [
+			{ name: 'Izlet brodom Makarska – Brač (Bol, Zlatni rat)', serviceType: 'excursions', purchase: 45, selling: 60, serviceHour: '09.00h' },
+			{ name: 'Biokovo Skywalk – ulaznice i transfer', serviceType: 'national-park', purchase: 28, selling: 36, serviceHour: '08.30h' },
+			{ name: 'NP Krka – ulaznice (Skradinski buk)', serviceType: 'national-park', purchase: 40, selling: 52, serviceHour: '10.00h' },
+			{ name: 'Ston – zidine i degustacija kamenica', serviceType: 'excursions', purchase: 24, selling: 32, serviceHour: '11.00h' },
+			{ name: 'Vinarija Saints Hills, Pelješac – degustacija', serviceType: 'winery', purchase: 30, selling: 40, serviceHour: '15.00h' },
+			{ name: 'Split – Dioklecijanova palača, vodička tura', serviceType: 'excursions', purchase: 15, selling: 20, serviceHour: '10.30h' },
+			{ name: 'Galerija Meštrović, Split – ulaznice', serviceType: 'museum', purchase: 10, selling: 14, serviceHour: '12.30h' },
+			{ name: 'Konoba Kalalarga, Makarska – večera', serviceType: 'restorants', purchase: 32, selling: 42, serviceHour: '19.30h' },
+		];
+
+		const OFFER_STATUSES = {
+			'placed': { label: 'Plasirano', class: 'badge-primary' },
+			'accepted': { label: 'Prihvaćeno', class: 'badge-success' },
+			'voided': { label: 'Storno', class: 'badge-danger' },
+			'closed-ops': { label: 'Zatvoreno (OPS)', class: 'badge-warning' },
+			'finalized': { label: 'Zatvoreno (FiR)', class: 'badge-dark' },
+		};
+
+		/** Status usluge from the process PDF; "0" is the default before OPS contacts the supplier. */
+		const SERVICE_STATUSES = {
+			'pending': { label: 'Neobrađeno', class: 'badge-light' },
+			'reserved': { label: 'Rezervirano', class: 'badge-primary' },
+			'announced': { label: 'Najavljeno', class: 'badge-success' },
+			'cancelled': { label: 'Stornirano', class: 'badge-danger' },
+		};
+
+		const DEFAULT_SERVICE_STATUS = 'pending';
+
+		/**
+		 * Open questions collected while building the prototype; fill in `answer` once decided.
+		 *
+		 * @type {Array<{ topic: string, question: string, context: ?string, answer: ?string }>}
+		 */
+		const QUESTIONS = [];
+
+		/** Locales of the CMS translatable fields; the prototype shows and creates aktivnosti in Croatian. */
+		const ACTIVITY_LOCALES = ['hr', 'en', 'de', 'it', 'si', 'cz'];
+
+		/**
+		 * Aktivnosti come from the CMS `activities` table (data.js), plus the ones added here, which the prototype keeps
+		 * in storage as if saved to that table. Unlike services they can be dropped any number of times. Lists saved
+		 * before the table existed (just names) become records.
+		 *
+		 * @return {Array<{ id: string, name: Object<string, ?string>, isAddedHere?: boolean }>}
+		 */
+		function storedActivities() {
+			let addedActivities = readStoredJson('raster-prototype-activities').added;
+
+			if (!addedActivities) {
+				addedActivities = (readStoredJson('raster-prototype-custom-activities').names || []).map(name => buildActivity(name));
+				writeStoredJson('raster-prototype-activities', { added: addedActivities });
+
+				try {
+					localStorage.removeItem('raster-prototype-custom-activities');
+				} catch (error) {
+					// storage unavailable, nothing to clean up
+				}
+			}
+
+			return [...window.ACTIVITIES, ...addedActivities];
+		}
+
+		function buildActivity(croatianName) {
+			const name = Object.fromEntries(ACTIVITY_LOCALES.map(locale => [locale, locale === 'hr' ? croatianName : null]));
+
+			return { id: generateId('activity'), name, isAddedHere: true };
+		}
+
+		/** Drag payload prefix that tells an activity card apart from a service (whose payload is its offer day item id). */
+		const ACTIVITY_DRAG_PREFIX = 'activity:';
+
+		const FEATURED_OFFER_REF = '2026-1129';
+
+		/** Bump when data.js changes its usluge, so saved statuses, guides and timeline rows don't point at removed ones. */
+		const DATA_VERSION = '3';
+
+		function resetStoredDataOnVersionChange() {
+			try {
+				if (localStorage.getItem('raster-prototype-data-version') === DATA_VERSION) {
+					return;
+				}
+
+				Object.keys(localStorage)
+					.filter(key => key.startsWith('raster-prototype-') && key !== 'raster-prototype-view')
+					.forEach(key => localStorage.removeItem(key));
+				localStorage.setItem('raster-prototype-data-version', DATA_VERSION);
+			} catch (error) {
+				// storage unavailable, nothing saved to reset
+			}
+		}
+
+		resetStoredDataOnVersionChange();
+
+		const BASELINE_STORAGE_KEY = 'raster-prototype-baseline';
+
+		/** Saved demo data, minus bookkeeping keys (remembered view, version, the baseline itself). */
+		function storedDemoKeys() {
+			return Object.keys(localStorage).filter(key => key.startsWith('raster-prototype-')
+				&& !['raster-prototype-view', 'raster-prototype-data-version', BASELINE_STORAGE_KEY].includes(key));
+		}
+
+		/** The first load after this was added snapshots the demo data as it was, so "Reset" always returns to that point. */
+		function saveBaselineOnce() {
+			try {
+				if (localStorage.getItem(BASELINE_STORAGE_KEY) !== null) {
+					return;
+				}
+
+				const baseline = Object.fromEntries(storedDemoKeys().map(key => [key, localStorage.getItem(key)]));
+
+				localStorage.setItem(BASELINE_STORAGE_KEY, JSON.stringify(baseline));
+			} catch (error) {
+				// storage unavailable, there's nothing to reset to
+			}
+		}
+
+		saveBaselineOnce();
+
+		function resetToBaseline() {
+			if (!window.confirm('Vratiti prototip na početno stanje? Sve izmjene nakon toga se brišu.')) {
+				return;
+			}
+
+			try {
+				const baseline = JSON.parse(localStorage.getItem(BASELINE_STORAGE_KEY) || '{}');
+
+				storedDemoKeys().forEach(key => localStorage.removeItem(key));
+				Object.entries(baseline).forEach(([key, value]) => localStorage.setItem(key, value));
+			} catch (error) {
+				// storage unavailable, the reload alone shows the untouched demo data
+			}
+
+			location.reload();
+		}
+
+		function readStoredView() {
+			try {
+				return localStorage.getItem('raster-prototype-view') || 'itinerary';
+			} catch (error) {
+				return 'itinerary';
+			}
+		}
+
+		const DEMO_GUIDE_REGIONS = ['Dubrovnik', 'Split', 'Zadar', 'Istra', 'Kvarner', 'Zagreb', 'Šibenik'];
+
+		/** The CMS has no guide region yet (new `tour_guides.region`), so the prototype hands each guide a demo one in turn. */
+		function withDemoRegions(tourGuides) {
+			return tourGuides.map((guide, guideIndex) => ({ ...guide, region: guide.region ?? DEMO_GUIDE_REGIONS[guideIndex % DEMO_GUIDE_REGIONS.length] }));
+		}
+
+		function generateId(prefix) {
+			return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+		}
+
+		/** A timeline row copies the service's data and only keeps a loose link to its offer day item. */
+		function buildTimelineRow(service, date, group, sharedId) {
+			return {
+				id: generateId('timeline'),
+				sharedId,
+				groupId: group?.id || null,
+				offerDayItemId: service.id,
+				date,
+				startsAt: parseServiceHour(service.serviceHour),
+				endsAt: '',
+				pax: null,
+				name: service.name,
+				isOptional: service.isOptional,
+				meetingPoint: '',
+				note: '',
+			};
+		}
+
+		/** An activity row (breakfast, bus boarding…) points at its CMS aktivnost instead of an offer day item and has no prices. */
+		function buildActivityRow(activity, date, group, sharedId) {
+			return {
+				id: generateId('timeline'),
+				sharedId,
+				groupId: group.id,
+				offerDayItemId: null,
+				activityId: activity.id,
+				isActivity: true,
+				date,
+				startsAt: '',
+				endsAt: '',
+				pax: null,
+				name: activity.name.hr,
+				isOptional: false,
+				meetingPoint: '',
+				note: '',
+			};
+		}
+
+		/**
+		 * The default timeline: every itinerary service on its own day. The sharedId comes from the offer day item,
+		 * so groups seeded separately from the itinerary still sync with each other under "Sve grupe".
+		 */
+		function itineraryTimelineRows(offer, group) {
+			return offer.days.flatMap(day => day.items
+				.filter(item => item.type === 'service' && !item.isDeleted)
+				.map(item => buildTimelineRow(item, day.date, group, 'shared-' + item.id)));
+		}
+
+		/** Takes the first time out of free-text service hours like "13.30h" or "09.30h/10.30h/11h"; empty when there is none. */
+		function parseServiceHour(serviceHour) {
+			const match = /(\d{1,2})(?:[.:](\d{2}))?\s*h/i.exec(serviceHour || '');
+
+			if (!match || Number(match[1]) > 23) {
+				return '';
+			}
+
+			return match[1].padStart(2, '0') + ':' + (match[2] || '00');
+		}
+
+		function readStoredJson(key) {
+			try {
+				return JSON.parse(localStorage.getItem(key)) || {};
+			} catch (error) {
+				return {};
+			}
+		}
+
+		/** Groups saved when a group had a single driver (driverName / driverPhone) get it as their first driver. */
+		function withDriverLists(groupsByOffer) {
+			Object.values(groupsByOffer).flat().forEach(group => {
+				if (!group.drivers) {
+					group.drivers = group.driverName || group.driverPhone
+						? [{ id: generateId('driver'), name: group.driverName || '', phone: group.driverPhone || '' }]
+						: [];
+				}
+
+				delete group.driverName;
+				delete group.driverPhone;
+			});
+
+			return groupsByOffer;
+		}
+
+		function writeStoredJson(key, value) {
+			try {
+				localStorage.setItem(key, JSON.stringify(value));
+			} catch (error) {
+				// storage unavailable, changes only last until reload
+			}
+		}
+
+		/** The featured offer leads every list and dropdown; the rest keep their departure order. */
+		function compareOffers(first, second) {
+			return (second.ref === FEATURED_OFFER_REF) - (first.ref === FEATURED_OFFER_REF)
+				|| first.departure.localeCompare(second.departure);
+		}
+
+		/** Puts services added through "Dodaj uslugu" (stored per offer, with their day) back onto the itinerary. */
+		function restoreAddedServices(offers, addedServicesByOffer) {
+			offers.forEach(offer => (addedServicesByOffer[offer.id] || []).forEach(({ date, ...item }) => {
+				offer.days.find(day => day.date === date)?.items.push(item);
+			}));
+		}
+
+		/** Deleted services stay in the data (the raster and timeline keep showing them), only flagged so the itinerary hides them. */
+		function restoreDeletedServices(offers, deletedServiceIdsByOffer) {
+			offers.forEach(offer => offer.days.forEach(day => day.items
+				.filter(item => (deletedServiceIdsByOffer[offer.id] || []).includes(item.id))
+				.forEach(item => item.isDeleted = true)));
+		}
+
+		function prototype() {
+			const offers = [...window.OFFERS].sort(compareOffers);
+			const addedServicesByOffer = readStoredJson('raster-prototype-added-services');
+			const deletedServiceIdsByOffer = readStoredJson('raster-prototype-deleted-services');
+
+			restoreAddedServices(offers, addedServicesByOffer);
+			restoreDeletedServices(offers, deletedServiceIdsByOffer);
+
+			return {
+				offers,
+				view: readStoredView(),
+				selectedOfferId: (offers.find(offer => offer.ref === FEATURED_OFFER_REF) || offers[0]).id,
+				search: '',
+				statusFilter: '',
+				toast: null,
+				toastTimer: null,
+				serviceStatuses: SERVICE_STATUSES,
+				serviceStatusById: readStoredJson('raster-prototype-service-statuses'),
+				servicePricesById: readStoredJson('raster-prototype-service-prices'),
+				financeFilesByOffer: readStoredJson('raster-prototype-finance-files'),
+				invoiceModal: null,
+				statusMenu: null,
+				addedServicesByOffer,
+				deletedServiceIdsByOffer,
+				serviceMenu: null,
+				/** Newest first; each is { id, type: 'added' | 'removed', title, message, detail, createdAt, isRead }. */
+				notifications: readStoredJson('raster-prototype-notifications').items || [],
+				isNotificationsOpen: false,
+				isBellRinging: false,
+
+				get unreadNotificationCount() {
+					return this.notifications.filter(notification => !notification.isRead).length;
+				},
+				groupsByOffer: withDriverLists(readStoredJson('raster-prototype-groups')),
+				groupModal: null,
+				/** Kept separate from groupModal (which is nulled on close) so the form's bindings never read a null object. */
+				groupForm: { name: '', drivers: [] },
+				isAddingActivity: false,
+				newActivityName: '',
+				draggedActivityId: null,
+				/** CMS aktivnosti first, then the ones added here (only those can be deleted). */
+				activities: storedActivities(),
+
+				questions: QUESTIONS,
+				isQuestionsOpen: true,
+				timelineGroupId: null,
+				collapsedTimelineDays: [],
+				timelineNotesByGroup: readStoredJson('raster-prototype-timeline-notes'),
+				dayNotesByGroup: readStoredJson('raster-prototype-day-notes'),
+				draggedServiceId: null,
+				dragOverDate: null,
+				timelineItemsByOffer: readStoredJson('raster-prototype-timeline-items'),
+
+				tourGuides: withDemoRegions(window.TOUR_GUIDES),
+				guideMenu: null,
+				guideSearch: '',
+
+				/** Guides selected when the menu opened come first (so ticking doesn't reorder), then alphabetical; search matches name, languages or region. */
+				get guideOptions() {
+					const query = this.guideSearch.trim().toLowerCase();
+					const pinnedGuideIds = this.guideMenu?.pinnedGuideIds || [];
+
+					return this.tourGuides
+						.filter(guide => !query || (guide.name + ' ' + guide.languages + ' ' + (guide.region || '')).toLowerCase().includes(query))
+						.sort((first, second) => (pinnedGuideIds.includes(second.id) - pinnedGuideIds.includes(first.id)) || first.name.localeCompare(second.name, 'hr'));
+				},
+
+				get openQuestionCount() {
+					return this.questions.filter(question => !question.answer).length;
+				},
+
+				init() {
+					this.seedExistingGroups();
+					window.addEventListener('storage', event => this.reloadChangedStorage(event.key));
+					this.$watch('selectedOfferId', () => this.timelineGroupId = null);
+				},
+
+				/** The najava partneru tab writes the sent date and status to storage; pick them up without a reload. */
+				reloadChangedStorage(key) {
+					if (key === 'raster-prototype-timeline-items') {
+						this.timelineItemsByOffer = readStoredJson(key);
+					}
+
+					if (key === 'raster-prototype-service-statuses') {
+						this.serviceStatusById = readStoredJson(key);
+					}
+				},
+
+				get selectedOffer() {
+					return this.offers.find(offer => offer.id === this.selectedOfferId);
+				},
+
+				get filteredOffers() {
+					const query = this.search.trim().toLowerCase();
+
+					return this.offers
+						.filter(offer => !this.statusFilter || offer.status === this.statusFilter)
+						.filter(offer => !query || [offer.ref, offer.client.name, offer.kam, ...offer.hotels.map(hotel => hotel.name)]
+							.some(value => (value || '').toLowerCase().includes(query)))
+						.sort(compareOffers);
+				},
+
+				setView(view) {
+					this.view = view;
+
+					try {
+						localStorage.setItem('raster-prototype-view', view);
+					} catch (error) {
+						// storage unavailable, the view just won't be remembered
+					}
+				},
+
+				openItinerary(offer) {
+					this.selectedOfferId = offer.id;
+					this.setView('itinerary');
+					window.scrollTo({ top: 0 });
+				},
+
+				/** Raster usluge are copies of the offer's service itinerary items, in date order. */
+				servicesOf(offer) {
+					return offer.days.flatMap(day => day.items
+						.filter(item => item.type === 'service')
+						.map(item => ({ ...item, date: day.date })));
+				},
+
+				contingentFor(day) {
+					const rooms = day.items.filter(item => item.type === 'room');
+
+					if (rooms.length === 0) {
+						return null;
+					}
+
+					return {
+						hotel: rooms[0].hotel,
+						board: rooms[0].board,
+						rooms: rooms.map(room => ({ type: room.roomType, purchase: room.purchase })),
+					};
+				},
+
+				/** Placed offers show the contracted contingent; accepted ones the last proforma invoice once it has passengers. */
+				pax(offer) {
+					if (offer.status !== 'placed' && offer.passengerCount > 0) {
+						return { count: offer.passengerCount, source: 'predračun' };
+					}
+
+					return { count: offer.contingentPax, source: 'kontingent' };
+				},
+
+				serviceStatusKey(serviceId) {
+					return this.serviceStatusById[serviceId] || DEFAULT_SERVICE_STATUS;
+				},
+
+				/** IN/OUT are analytical prices entered per usluga (empty until entered), compared with the offer's prices to fix the calculation. */
+				servicePriceOf(service, priceType) {
+					return this.servicePricesById[service.id]?.[priceType] ?? '';
+				},
+
+				/** The offer's purchase / selling price, shown greyed in the IN/OUT inputs for comparison. */
+				offerPriceOf(service, priceType) {
+					const offerPrice = priceType === 'in' ? service.purchase : service.selling;
+
+					return offerPrice ?? '—';
+				},
+
+				setServicePrice(service, priceType, value) {
+					const price = value === '' ? null : Number(value);
+
+					this.servicePricesById = { ...this.servicePricesById, [service.id]: { ...this.servicePricesById[service.id], [priceType]: price } };
+					writeStoredJson('raster-prototype-service-prices', this.servicePricesById);
+				},
+
+				serviceStatus(serviceId) {
+					return SERVICE_STATUSES[this.serviceStatusKey(serviceId)];
+				},
+
+				/** A timeline row without its own status follows the usluga status from the raster. */
+				timelineRowStatusKey(row) {
+					return row.status || this.serviceStatusKey(row.offerDayItemId);
+				},
+
+				timelineRowStatus(row) {
+					return SERVICE_STATUSES[this.timelineRowStatusKey(row)];
+				},
+
+				/**
+				 * Groups with at least one row of the usluga whose status differs from the raster status.
+				 *
+				 * @returns {Array<{ name: string, statusLabel: string }>}
+				 */
+				groupsWithDifferentStatus(offer, offerDayItemId) {
+					const serviceStatusKey = this.serviceStatusKey(offerDayItemId);
+					const differingRows = this.timelineItemsOf(offer)
+						.filter(row => row.offerDayItemId === offerDayItemId && !row.isActivity && this.timelineRowStatusKey(row) !== serviceStatusKey);
+
+					return this.groupsOf(offer)
+						.map(group => ({ group, differingRow: differingRows.find(row => row.groupId === group.id) }))
+						.filter(({ differingRow }) => differingRow)
+						.map(({ group, differingRow }) => ({ name: group.name, statusLabel: this.timelineRowStatus(differingRow).label }));
+				},
+
+				/** `rowId` is set when the menu was opened from a timeline row, so the choice applies only to that group's row. */
+				openStatusMenu(event, serviceId, rowId = null) {
+					if (this.statusMenu?.serviceId === serviceId && this.statusMenu?.rowId === rowId) {
+						this.statusMenu = null;
+
+						return;
+					}
+
+					const rect = event.currentTarget.getBoundingClientRect();
+
+					this.guideMenu = null;
+					this.statusMenu = { serviceId, rowId, top: rect.bottom + 4, left: rect.left };
+				},
+
+				get statusMenuRow() {
+					return this.statusMenu?.rowId
+						? this.timelineItemsOf(this.selectedOffer).find(row => row.id === this.statusMenu.rowId) || null
+						: null;
+				},
+
+				get statusMenuSelectedKey() {
+					if (!this.statusMenu) {
+						return null;
+					}
+
+					return this.statusMenuRow ? this.timelineRowStatusKey(this.statusMenuRow) : this.serviceStatusKey(this.statusMenu.serviceId);
+				},
+
+				chooseStatus(status) {
+					if (this.statusMenuRow) {
+						this.setTimelineRowStatus(this.statusMenuRow, status);
+
+						return;
+					}
+
+					this.setServiceStatus(this.statusMenu.serviceId, status);
+				},
+
+				/** Picking the raster status again clears the override, so the row follows the raster from then on. */
+				setTimelineRowStatus(row, status) {
+					row.status = status === this.serviceStatusKey(row.offerDayItemId) ? null : status;
+					this.statusMenu = null;
+					this.persistTimeline();
+				},
+
+				/** Catalog services not already on the day the menu was opened for. */
+				get serviceMenuOptions() {
+					const day = this.serviceMenu && this.selectedOffer.days.find(existing => existing.date === this.serviceMenu.date);
+					const dayServiceNames = (day?.items || []).filter(item => !item.isDeleted).map(item => item.name);
+
+					return SERVICE_CATALOG.filter(service => !dayServiceNames.includes(service.name));
+				},
+
+				openServiceMenu(event, day) {
+					if (this.serviceMenu?.date === day.date) {
+						this.serviceMenu = null;
+
+						return;
+					}
+
+					const rect = event.currentTarget.getBoundingClientRect();
+
+					this.serviceMenu = { date: day.date, top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 340) };
+				},
+
+				/** Adds the service to the day; it shows up as new in the raster and in the timeline sidebar until it's placed. */
+				addService(catalogService) {
+					const offer = this.selectedOffer;
+					const date = this.serviceMenu.date;
+					const item = {
+						...catalogService,
+						id: generateId('added-service'),
+						type: 'service',
+						city: null,
+						voucherSubtext: null,
+						isOptional: false,
+						isNew: true,
+					};
+
+					offer.days.find(day => day.date === date).items.push(item);
+					this.addedServicesByOffer = {
+						...this.addedServicesByOffer,
+						[offer.id]: [...(this.addedServicesByOffer[offer.id] || []), { ...item, date }],
+					};
+					writeStoredJson('raster-prototype-added-services', this.addedServicesByOffer);
+					this.serviceMenu = null;
+					this.notify('Usluga dodana — nova je u rasteru i u timelineu');
+
+					this.pushNotification('added', 'Nova usluga', item.name, this.serviceNotificationDetail(offer, date));
+				},
+
+				/** Removes the service from the itinerary only; the raster and timeline keep it, marked as deleted. */
+				deleteService(day, item) {
+					if (!window.confirm('Obrisati uslugu "' + item.name + '" iz itinerara?\nU rasteru i timelineu ostaje, označena kao obrisana.')) {
+						return;
+					}
+
+					const offer = this.selectedOffer;
+
+					item.isDeleted = true;
+					this.deletedServiceIdsByOffer = {
+						...this.deletedServiceIdsByOffer,
+						[offer.id]: [...(this.deletedServiceIdsByOffer[offer.id] || []), item.id],
+					};
+					writeStoredJson('raster-prototype-deleted-services', this.deletedServiceIdsByOffer);
+					this.notify('Usluga obrisana iz itinerara');
+					this.pushNotification('removed', 'Obrisana usluga', item.name, this.serviceNotificationDetail(offer, day.date));
+				},
+
+				isServiceDeleted(offerDayItemId) {
+					return Boolean(offerDayItemId) && (this.deletedServiceIdsByOffer[this.selectedOffer.id] || []).includes(offerDayItemId);
+				},
+
+				serviceNotificationDetail(offer, date) {
+					const dayIndex = offer.days.findIndex(day => day.date === date);
+
+					return offer.ref + ' · Dan ' + (dayIndex + 1) + ', ' + this.formatDate(date);
+				},
+
+				pushNotification(type, title, message, detail) {
+					this.notifications = [
+						{ id: generateId('notification'), type, title, message, detail, createdAt: new Date().toISOString(), isRead: false },
+						...this.notifications,
+					];
+					this.persistNotifications();
+					this.isBellRinging = false;
+					this.$nextTick(() => this.isBellRinging = true);
+				},
+
+				/** Whatever was shown while the panel was open counts as read once it closes. */
+				closeNotifications() {
+					if (!this.isNotificationsOpen) {
+						return;
+					}
+
+					this.isNotificationsOpen = false;
+					this.notifications = this.notifications.map(notification => ({ ...notification, isRead: true }));
+					this.persistNotifications();
+				},
+
+				openNotification(notification) {
+					this.closeNotifications();
+					this.setView('raster');
+				},
+
+				persistNotifications() {
+					writeStoredJson('raster-prototype-notifications', { items: this.notifications });
+				},
+
+				formatNotificationTime(createdAt) {
+					const createdAtDate = new Date(createdAt);
+					const twoDigits = number => String(number).padStart(2, '0');
+
+					return twoDigits(createdAtDate.getDate()) + '.' + twoDigits(createdAtDate.getMonth() + 1) + '. '
+						+ twoDigits(createdAtDate.getHours()) + ':' + twoDigits(createdAtDate.getMinutes());
+				},
+
+				/** Group rows that already had the new status stop overriding it and follow the raster again. */
+				setServiceStatus(serviceId, status) {
+					this.serviceStatusById = { ...this.serviceStatusById, [serviceId]: status };
+					this.statusMenu = null;
+					writeStoredJson('raster-prototype-service-statuses', this.serviceStatusById);
+					Object.values(this.timelineItemsByOffer)
+						.flat()
+						.filter(row => row.offerDayItemId === serviceId && row.status === status)
+						.forEach(row => row.status = null);
+					this.persistTimeline();
+				},
+
+				toggleTimelineDay(date) {
+					this.collapsedTimelineDays = this.isTimelineDayCollapsed(date)
+						? this.collapsedTimelineDays.filter(collapsedDate => collapsedDate !== date)
+						: [...this.collapsedTimelineDays, date];
+				},
+
+				isTimelineDayCollapsed(date) {
+					return this.collapsedTimelineDays.includes(date);
+				},
+
+				startServiceDrag(event, item) {
+					this.draggedServiceId = item.id;
+					event.dataTransfer.effectAllowed = 'copy';
+					event.dataTransfer.setData('text/plain', item.id);
+				},
+
+				leaveDropDay(event, date) {
+					if (!event.currentTarget.contains(event.relatedTarget) && this.dragOverDate === date) {
+						this.dragOverDate = null;
+					}
+				},
+
+				/**
+				 * Every group always keeps its own copy of the timeline rows. "Sve grupe" is a view over the groups that are
+				 * not edited separately: what happens there is applied to each of them, matched through the row's sharedId.
+				 */
+				syncedGroupsOf(offer) {
+					return this.groupsOf(offer).filter(group => !group.isEditedSeparately);
+				},
+
+				get timelineGroup() {
+					return this.groupsOf(this.selectedOffer).find(group => group.id === this.timelineGroupId) || null;
+				},
+
+				/** "Sve grupe" is editable while at least one group follows it; a single group only once it's edited separately. */
+				get isTimelineEditable() {
+					return this.timelineGroup
+						? this.timelineGroup.isEditedSeparately
+						: this.syncedGroupsOf(this.selectedOffer).length > 0;
+				},
+
+				dayNoteOf(date) {
+					return (this.dayNotesByGroup[this.displayedTimelineGroupId] || {})[date] || '';
+				},
+
+				/** Like meeting point and napomena: under "Sve grupe" the day description is written to every synced group. */
+				setDayNote(date, note) {
+					const groups = this.timelineGroup ? [this.timelineGroup] : this.syncedGroupsOf(this.selectedOffer);
+
+					groups.forEach(group => {
+						this.dayNotesByGroup = { ...this.dayNotesByGroup, [group.id]: { ...this.dayNotesByGroup[group.id], [date]: note.trim() } };
+					});
+					writeStoredJson('raster-prototype-day-notes', this.dayNotesByGroup);
+				},
+
+				/** The group whose rows are shown: the selected one, or under "Sve grupe" any synced group (their rows are identical). */
+				get displayedTimelineGroupId() {
+					return this.timelineGroup?.id || this.syncedGroupsOf(this.selectedOffer)[0]?.id || null;
+				},
+
+				/**
+				 * A dropped card becomes a row in the selected group, or in every synced group under "Sve grupe".
+				 * Services keep a loose link to their offer day item; activities have no link and no prices.
+				 */
+				dropService(event, date) {
+					const payload = event.dataTransfer.getData('text/plain');
+					const offer = this.selectedOffer;
+					const activity = payload.startsWith(ACTIVITY_DRAG_PREFIX)
+						? this.activities.find(item => item.id === payload.slice(ACTIVITY_DRAG_PREFIX.length))
+						: null;
+					const service = activity ? null : this.servicesOf(offer).find(item => item.id === payload);
+
+					this.dragOverDate = null;
+					this.draggedServiceId = null;
+					this.draggedActivityId = null;
+
+					if (!service && !activity) {
+						return;
+					}
+
+					if (!this.isTimelineEditable) {
+						this.notify(this.timelineLockedMessage());
+
+						return;
+					}
+
+					const groups = this.timelineGroup ? [this.timelineGroup] : this.syncedGroupsOf(offer);
+					const sharedId = generateId('shared');
+					const rows = groups.map(group => activity
+						? buildActivityRow(activity, date, group, sharedId)
+						: buildTimelineRow(service, date, group, sharedId));
+
+					this.setTimelineItems(offer.id, [...this.timelineItemsOf(offer), ...rows]);
+					this.notify(rows.length === 1
+						? 'Dodano u ' + groups[0].name
+						: 'Dodano u ' + rows.length + ' grupe');
+				},
+
+				/** Explains why the displayed timeline can't be edited. */
+				timelineLockedMessage() {
+					if (this.timelineGroup) {
+						return this.timelineGroup.name + ' prati "Sve grupe" — klikni "Uredi samo za ovu grupu"';
+					}
+
+					return this.groupsOf(this.selectedOffer).length === 0 ? 'Prvo dodaj grupu' : 'Sve grupe se uređuju zasebno';
+				},
+
+				startActivityDrag(event, activity) {
+					this.draggedActivityId = activity.id;
+					event.dataTransfer.effectAllowed = 'copy';
+					event.dataTransfer.setData('text/plain', ACTIVITY_DRAG_PREFIX + activity.id);
+				},
+
+				startAddingActivity() {
+					this.newActivityName = '';
+					this.isAddingActivity = true;
+					this.$nextTick(() => this.$refs.newActivityInput.focus());
+				},
+
+				/**
+				 * A new aktivnost is saved to the CMS `activities` table (Croatian name only, the other languages are filled in the
+				 * CMS); it lands on the timeline once dragged onto a day.
+				 */
+				addActivity() {
+					const name = this.newActivityName.trim();
+
+					if (!name) {
+						return;
+					}
+
+					if (this.activities.some(activity => activity.name.hr?.toLowerCase() === name.toLowerCase())) {
+						this.notify('„' + name + '” već postoji');
+
+						return;
+					}
+
+					this.activities = [...this.activities, buildActivity(name)];
+					this.saveAddedActivities();
+					this.isAddingActivity = false;
+				},
+
+				/** Removes the aktivnost from the list only; rows already on a timeline stay (in the CMS it's a soft delete). */
+				deleteAddedActivity(activityId) {
+					this.activities = this.activities.filter(activity => activity.id !== activityId);
+					this.saveAddedActivities();
+				},
+
+				saveAddedActivities() {
+					writeStoredJson('raster-prototype-activities', { added: this.activities.filter(activity => activity.isAddedHere) });
+				},
+
+				timelineItemsOf(offer) {
+					return this.timelineItemsByOffer[offer.id] || [];
+				},
+
+				/** The editor is plain contenteditable, so its HTML is only written when the shown group changes (keeps the caret in place). */
+				loadTimelineNotes(editor, groupId) {
+					if (editor.dataset.groupId === String(groupId)) {
+						return;
+					}
+
+					editor.dataset.groupId = String(groupId);
+					editor.innerHTML = this.timelineNotesByGroup[groupId] || '';
+				},
+
+				saveTimelineNotes(editor) {
+					const html = editor.innerText.trim() ? editor.innerHTML : '';
+
+					if (!html) {
+						editor.innerHTML = '';
+					}
+
+					this.timelineNotesByGroup = { ...this.timelineNotesByGroup, [this.timelineGroupId]: html };
+					writeStoredJson('raster-prototype-timeline-notes', this.timelineNotesByGroup);
+				},
+
+				formatTimelineNotes(command, value = null) {
+					this.$refs.timelineNotesEditor.focus();
+					document.execCommand(command, false, value);
+					this.saveTimelineNotes(this.$refs.timelineNotesEditor);
+				},
+
+				addTimelineNotesLink() {
+					const url = prompt('Poveznica (npr. rooming lista):', 'https://');
+
+					if (url && url !== 'https://') {
+						this.formatTimelineNotes('createLink', url);
+					}
+				},
+
+				/** The PDF page reads the same stored timeline, so it always shows the group's latest rows. */
+				openTimelinePdf() {
+					window.open('timeline-pdf.html?offer=' + this.selectedOffer.id + '&group=' + this.timelineGroup.id, '_blank');
+				},
+
+				/** Rows of the displayed group; an offer without groups previews the default itinerary timeline (read-only). */
+				/** Pax summed over every group's copy of the row; null when no group has entered any. */
+				totalPaxOf(row) {
+					const paxCounts = this.timelineItemsOf(this.selectedOffer)
+						.filter(groupRow => groupRow.sharedId === row.sharedId && Number.isFinite(groupRow.pax))
+						.map(groupRow => groupRow.pax);
+
+					return paxCounts.length ? paxCounts.reduce((total, pax) => total + pax, 0) : null;
+				},
+
+				get displayedTimelineRows() {
+					if (this.groupsOf(this.selectedOffer).length === 0) {
+						return itineraryTimelineRows(this.selectedOffer, null).map(row => ({ ...row, id: row.sharedId }));
+					}
+
+					return this.timelineItemsOf(this.selectedOffer).filter(row => row.groupId === this.displayedTimelineGroupId);
+				},
+
+				/** Rows of the day ordered by start time, untimed rows last. */
+				timelineRowsFor(date) {
+					return this.displayedTimelineRows
+						.filter(row => row.date === date)
+						.sort((first, second) => (first.startsAt || '99:99').localeCompare(second.startsAt || '99:99'));
+				},
+
+				/** Services of the day not yet on the displayed timeline; removing a row brings its service back. */
+				availableServicesOf(day) {
+					const usedItemIds = this.displayedTimelineRows.map(row => row.offerDayItemId);
+
+					return day.items.filter(item => item.type === 'service' && !item.isDeleted && !usedItemIds.includes(item.id));
+				},
+
+				/** Copies an edited field to the same row of every other synced group when editing under "Sve grupe". */
+				updateTimelineRow(row, field) {
+					if (!this.timelineGroup) {
+						const syncedGroupIds = this.syncedGroupsOf(this.selectedOffer).map(group => group.id);
+
+						this.timelineItemsOf(this.selectedOffer)
+							.filter(sibling => sibling.sharedId === row.sharedId && syncedGroupIds.includes(sibling.groupId))
+							.forEach(sibling => sibling[field] = row[field]);
+					}
+
+					this.persistTimeline();
+				},
+
+				/** When the najava to the partner for this usluga was sent, read from any of its timeline rows. */
+				partnerAnnouncedAtOf(offer, offerDayItemId) {
+					return this.timelineItemsOf(offer).find(row => row.offerDayItemId === offerDayItemId && row.partnerAnnouncedAt)?.partnerAnnouncedAt || null;
+				},
+
+				/**
+				 * One najava to the partner covers every bus, so it opens from the Raster usluga as an email preview (per group: day and
+				 * time, pax, vodič, vozač, plus free text). Sending there marks the usluga's rows in all groups and sets its status to
+				 * "Najavljeno"; vouchers aren't sent, they all go to the vodič with the group's najava.
+				 */
+				openPartnerAnnouncement(offer, service) {
+					window.open('najava-partner.html?offer=' + offer.id + '&service=' + service.id, '_blank');
+				},
+
+				removeTimelineItem(row) {
+					const offer = this.selectedOffer;
+					const syncedGroupIds = this.syncedGroupsOf(offer).map(group => group.id);
+					const isRemoved = existing => this.timelineGroup
+						? existing.id === row.id
+						: existing.sharedId === row.sharedId && syncedGroupIds.includes(existing.groupId);
+
+					this.setTimelineItems(offer.id, this.timelineItemsOf(offer).filter(existing => !isRemoved(existing)));
+				},
+
+				editGroupSeparately(group) {
+					this.updateGroups(this.selectedOffer.id, this.groupsOf(this.selectedOffer)
+						.map(existing => existing.id === group.id ? { ...existing, isEditedSeparately: true } : existing));
+					this.notify(group.name + ' se od sada uređuje zasebno');
+				},
+
+				setTimelineItems(offerId, rows) {
+					this.timelineItemsByOffer = { ...this.timelineItemsByOffer, [offerId]: rows };
+					this.persistTimeline();
+				},
+
+				persistTimeline() {
+					writeStoredJson('raster-prototype-timeline-items', this.timelineItemsByOffer);
+				},
+
+				guidesByIds(guideIds) {
+					return (guideIds || [])
+						.map(guideId => this.tourGuides.find(guide => guide.id === guideId))
+						.filter(Boolean);
+				},
+
+				/** Every distinct guide on the offer's timelines, from usluge and aktivnosti of all groups. */
+				offerGuidesOf(offer) {
+					const guideIds = this.timelineItemsOf(offer).flatMap(row => row.guideIds || []);
+
+					return this.guidesByIds([...new Set(guideIds)]);
+				},
+
+				/** Guides are assigned per timeline row (so per group); the raster shows every distinct one across the usluga's rows. */
+				rasterGuidesOf(offer, offerDayItemId) {
+					const guideIds = this.timelineItemsOf(offer)
+						.filter(row => row.offerDayItemId === offerDayItemId)
+						.flatMap(row => row.guideIds || []);
+
+					return this.guidesByIds([...new Set(guideIds)]);
+				},
+
+				/** An usluga on a group timeline without any vodič is "Potreban vodič"; before any group exists the raster shows "—". */
+				isServiceOnTimeline(offer, offerDayItemId) {
+					return this.timelineItemsOf(offer).some(row => row.offerDayItemId === offerDayItemId);
+				},
+
+				get guideMenuRow() {
+					return this.guideMenu ? this.timelineItemsOf(this.selectedOffer).find(row => row.id === this.guideMenu.rowId) || null : null;
+				},
+
+				openGuideMenu(event, row) {
+					if (this.guideMenu?.rowId === row.id) {
+						this.guideMenu = null;
+
+						return;
+					}
+
+					const rect = event.currentTarget.getBoundingClientRect();
+					const menuHeight = 384;
+					const opensUpwards = rect.bottom + menuHeight > window.innerHeight && rect.top > menuHeight;
+
+					this.statusMenu = null;
+					this.guideSearch = '';
+					this.guideMenu = {
+						rowId: row.id,
+						pinnedGuideIds: [...(row.guideIds || [])],
+						top: opensUpwards ? rect.top - menuHeight : rect.bottom + 4,
+						left: Math.max(8, Math.min(rect.left, window.innerWidth - 298)),
+					};
+					this.$nextTick(() => this.$refs.guideSearchInput.focus());
+				},
+
+				isGuideSelected(guideId) {
+					return (this.guideMenuRow?.guideIds || []).includes(guideId);
+				},
+
+				toggleGuide(guideId) {
+					const row = this.guideMenuRow;
+					const guideIds = row.guideIds || [];
+
+					row.guideIds = guideIds.includes(guideId)
+						? guideIds.filter(selectedId => selectedId !== guideId)
+						: [...guideIds, guideId];
+					this.persistTimeline();
+				},
+
+				groupsOf(offer) {
+					return this.groupsByOffer[offer.id] || [];
+				},
+
+				openGroupModal(offer, group = null) {
+					this.groupForm = {
+						name: group?.name || 'Grupa ' + (this.groupsOf(offer).length + 1),
+						drivers: (group?.drivers || []).map(driver => ({ note: '', ...driver })),
+					};
+					this.groupModal = { offerId: offer.id, offerRef: offer.ref, groupId: group?.id || null };
+				},
+
+				addDriverToForm() {
+					this.groupForm.drivers.push({ id: generateId('driver'), name: '', phone: '', note: '' });
+				},
+
+				removeDriverFromForm(driverId) {
+					this.groupForm.drivers = this.groupForm.drivers.filter(driver => driver.id !== driverId);
+				},
+
+				driverNamesOf(group) {
+					return group.drivers.map(driver => driver.name || 'Vozač').join(', ');
+				},
+
+				/** Hover text on the raster group chip: every driver with their phone and note, one per line. */
+				driverContactsOf(group) {
+					return group.drivers.length
+						? group.drivers.map(driver => [driver.name || 'Vozač', driver.phone, driver.note].filter(Boolean).join(' · ')).join('\n')
+						: 'Bez vozača';
+				},
+
+				saveGroup() {
+					const { offerId, groupId } = this.groupModal;
+					const groups = this.groupsByOffer[offerId] || [];
+					const group = {
+						isEditedSeparately: false,
+						...groups.find(existing => existing.id === groupId),
+						id: groupId || generateId('group'),
+						name: this.groupForm.name.trim(),
+						drivers: this.groupForm.drivers
+							.map(driver => ({ id: driver.id, name: driver.name.trim(), phone: driver.phone.trim(), note: driver.note.trim() }))
+							.filter(driver => driver.name || driver.phone || driver.note),
+					};
+
+					if (!groupId) {
+						this.seedGroupTimeline(offerId, group);
+					}
+
+					this.updateGroups(offerId, groupId
+						? groups.map(existing => existing.id === groupId ? group : existing)
+						: [...groups, group]);
+				},
+
+				/**
+				 * A new group starts as its own copy of the "Sve grupe" timeline, or of the itinerary services
+				 * when no other group follows "Sve grupe" yet.
+				 */
+				seedGroupTimeline(offerId, group) {
+					const offer = this.offers.find(existing => existing.id === offerId);
+					const sourceGroup = (this.groupsByOffer[offerId] || [])
+						.find(existing => existing.id !== group.id && !existing.isEditedSeparately && existing.isItinerarySeeded);
+					const rows = this.timelineItemsByOffer[offerId] || [];
+					const seededRows = sourceGroup
+						? rows
+							.filter(row => row.groupId === sourceGroup.id)
+							.map(row => ({ ...row, id: generateId('timeline'), groupId: group.id }))
+						: itineraryTimelineRows(offer, group);
+
+					if (sourceGroup && this.dayNotesByGroup[sourceGroup.id]) {
+						this.dayNotesByGroup = { ...this.dayNotesByGroup, [group.id]: { ...this.dayNotesByGroup[sourceGroup.id] } };
+						writeStoredJson('raster-prototype-day-notes', this.dayNotesByGroup);
+					}
+
+					group.isItinerarySeeded = true;
+					this.timelineItemsByOffer = { ...this.timelineItemsByOffer, [offerId]: [...rows, ...seededRows] };
+				},
+
+				/**
+				 * Groups saved before default seeding existed get the itinerary services they're still missing; services
+				 * already on their timeline aren't added twice. Rows from before syncing get their own sharedId.
+				 */
+				seedExistingGroups() {
+					Object.entries(this.groupsByOffer).forEach(([offerId, groups]) => {
+						const offer = this.offers.find(existing => existing.id === offerId);
+
+						this.timelineItemsByOffer[offerId] = (this.timelineItemsByOffer[offerId] || [])
+							.map(row => row.sharedId ? row : { ...row, sharedId: row.id });
+
+						if (!offer) {
+							return;
+						}
+
+						groups
+							.filter(group => !group.isItinerarySeeded)
+							.forEach(group => {
+								const rows = this.timelineItemsByOffer[offerId];
+								const presentItemIds = rows.filter(row => row.groupId === group.id).map(row => row.offerDayItemId);
+								const missingRows = itineraryTimelineRows(offer, group).filter(row => !presentItemIds.includes(row.offerDayItemId));
+
+								this.timelineItemsByOffer[offerId] = [...rows, ...missingRows];
+								group.isItinerarySeeded = true;
+							});
+					});
+
+					writeStoredJson('raster-prototype-groups', this.groupsByOffer);
+					this.persistTimeline();
+				},
+
+				deleteGroup() {
+					const offer = this.offers.find(existing => existing.id === this.groupModal.offerId);
+					const group = this.groupsOf(offer).find(existing => existing.id === this.groupModal.groupId);
+
+					this.removeGroup(offer, group);
+				},
+
+				/** Removing a group also removes its timeline, so it asks first. */
+				removeGroup(offer, group) {
+					const rowCount = this.timelineItemsOf(offer).filter(row => row.groupId === group.id).length;
+					const message = 'Obrisati ' + group.name + '?' + (rowCount ? '\nNjen timeline (' + rowCount + ' redova) se briše.' : '');
+
+					if (!window.confirm(message)) {
+						return;
+					}
+
+					this.updateGroups(offer.id, this.groupsOf(offer).filter(existing => existing.id !== group.id));
+					this.notify(group.name + ' obrisana');
+				},
+
+				updateGroups(offerId, groups) {
+					this.groupsByOffer = { ...this.groupsByOffer, [offerId]: groups };
+					this.groupModal = null;
+
+					if (!groups.some(group => group.id === this.timelineGroupId)) {
+						this.timelineGroupId = null;
+					}
+
+					// a deleted group takes its timeline rows with it
+					const groupIds = groups.map(group => group.id);
+
+					this.timelineItemsByOffer = {
+						...this.timelineItemsByOffer,
+						[offerId]: (this.timelineItemsByOffer[offerId] || []).filter(row => groupIds.includes(row.groupId)),
+					};
+					this.persistTimeline();
+					writeStoredJson('raster-prototype-groups', this.groupsByOffer);
+				},
+
+				offerStatus(offer) {
+					return OFFER_STATUSES[offer.status] || { label: offer.status, class: 'badge-light' };
+				},
+
+				roomTypeLabel(type) {
+					return ROOM_TYPE_LABELS[type] || type;
+				},
+
+				serviceTypeLabel(type) {
+					return SERVICE_TYPE_LABELS[type] || type;
+				},
+
+				formatDate(value) {
+					if (!value) {
+						return '—';
+					}
+
+					const [year, month, day] = value.split('-');
+
+					return day + '.' + month + '.' + year + '.';
+				},
+
+				financeFilesOf(offer) {
+					return this.financeFilesByOffer[offer.id] || [];
+				},
+
+				/** Each PDF is its own Financije row; a usluga's invoices are the rows uploaded from its "Račun usluga" cell. */
+				serviceInvoicesOf(offer, service) {
+					return this.financeFilesOf(offer).filter(financeFile => financeFile.serviceId === service.id);
+				},
+
+				/** With a usluga the PDFs are its "Račun usluga"; without one they are the offer's "Ostali računi". */
+				openInvoiceModal(offer, service = null) {
+					this.invoiceModal = { offer, service, files: [], isDragging: false };
+				},
+
+				/** Reads the picked PDFs right away so the modal can count them and take a note for each before saving. */
+				async addInvoiceFiles(fileList) {
+					const pdfFiles = [...fileList].filter(file => file.type === 'application/pdf');
+
+					if (pdfFiles.length < fileList.length) {
+						this.notify('Samo PDF datoteke');
+					}
+
+					const readFiles = await Promise.all(pdfFiles.map(file => new Promise(resolve => {
+						const reader = new FileReader();
+
+						reader.onload = () => resolve({ id: generateId('finance-file'), name: file.name, size: file.size, dataUrl: reader.result, note: '' });
+						reader.readAsDataURL(file);
+					})));
+
+					this.invoiceModal?.files.push(...readFiles);
+				},
+
+				removeInvoiceFile(uploadFileId) {
+					this.invoiceModal.files = this.invoiceModal.files.filter(uploadFile => uploadFile.id !== uploadFileId);
+				},
+
+				openFinance(offer) {
+					this.selectedOfferId = offer.id;
+					this.setView('finance');
+					window.scrollTo({ top: 0 });
+				},
+
+				/**
+				 * Each PDF becomes its own Financije row with its note; the usluga's name is kept so the row still reads right after the
+				 * usluga is deleted. The prototype keeps each PDF as a data URL in localStorage, so very large files may not survive a reload.
+				 */
+				saveInvoices() {
+					const { offer, service, files } = this.invoiceModal;
+					const uploadedAt = new Date().toISOString();
+					const uploadedFiles = files.map(uploadFile => ({
+						...uploadFile,
+						note: uploadFile.note.trim(),
+						uploadedAt,
+						kind: service ? 'service' : 'other',
+						serviceId: service?.id ?? null,
+						serviceName: service?.name ?? null,
+					}));
+
+					this.financeFilesByOffer = { ...this.financeFilesByOffer, [offer.id]: [...uploadedFiles, ...this.financeFilesOf(offer)] };
+					this.invoiceModal = null;
+
+					try {
+						localStorage.setItem('raster-prototype-finance-files', JSON.stringify(this.financeFilesByOffer));
+						this.notify(uploadedFiles.length === 1 ? 'PDF učitan' : 'Učitano PDF-ova: ' + uploadedFiles.length);
+					} catch (error) {
+						this.notify('PDF učitan, ali je prevelik za spremanje u prototipu — nestat će nakon osvježavanja');
+					}
+				},
+
+				/** Browsers block opening data URLs directly, so the PDF opens through a blob URL. */
+				async openFinanceFile(financeFile) {
+					const pdfBlob = await (await fetch(financeFile.dataUrl)).blob();
+
+					window.open(URL.createObjectURL(pdfBlob), '_blank');
+				},
+
+				/** Every PDF starts as "Novo"; finance marks it "Završeno" once it's handled. Set in place so the keyed row re-renders. */
+				completeFinanceFile(financeFile) {
+					financeFile.completedAt = new Date().toISOString();
+					writeStoredJson('raster-prototype-finance-files', this.financeFilesByOffer);
+				},
+
+				money(value) {
+					return parseFloat(value || 0).toFixed(2) + '€';
+				},
+
+				comingSoon(feature) {
+					this.notify(feature + ' — dolazi u sljedećem koraku');
+				},
+
+				notify(message) {
+					this.toast = message;
+					clearTimeout(this.toastTimer);
+					this.toastTimer = setTimeout(() => this.toast = null, 2200);
+				},
+			};
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="hr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Timeline</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+	<style>
+		:root {
+			--bg: #e7e9ef;
+			--paper: #ffffff;
+			--ink: #1b1d3a;
+			--text: #2c2f4a;
+			--muted: #7a7f99;
+			--line: #e3e6ef;
+			--day-tint: #f7f8fc;
+			--brand: #262a6b;
+			--accent: #f2a516;
+			--accent-soft: #fff4dc;
+			--guide: #e6f7ec;
+			--guide-ink: #146c43;
+			--note: #8a6400;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: Inter, system-ui, sans-serif;
+			font-size: 10.5px;
+			line-height: 1.4;
+		}
+
+		.toolbar {
+			position: sticky;
+			top: 0;
+			z-index: 2;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 16px;
+			background: #1e1e2d;
+			color: #fff;
+			font-size: 13px;
+		}
+
+		.toolbar .spacer { flex: 1; }
+
+		.toolbar button {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 7px 12px;
+			border: 0;
+			border-radius: 6px;
+			background: #1b84ff;
+			color: #fff;
+			font: inherit;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.toolbar button.is-light { background: rgba(255, 255, 255, 0.12); }
+
+		.paper {
+			width: 210mm;
+			max-width: calc(100% - 32px);
+			margin: 20px auto;
+			padding: 12mm 12mm;
+			background: var(--paper);
+			box-shadow: 0 8px 30px rgba(20, 22, 60, 0.14);
+		}
+
+		/* header */
+		.doc-head {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			padding-bottom: 10px;
+		}
+
+		.wordmark { color: var(--brand); font-size: 20px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+		.wordmark span { color: var(--accent); }
+
+		.doc-title { flex: 1; min-width: 0; }
+		.doc-title h1 { margin: 0; color: var(--ink); font-size: 15px; }
+		.doc-title div { color: var(--muted); }
+
+		.doc-ref { color: var(--muted); text-align: right; }
+		.doc-ref strong { display: block; color: var(--ink); font-size: 12px; }
+
+		.summary {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4px 18px;
+			margin-bottom: 10px;
+			padding: 7px 10px;
+			background: var(--day-tint);
+			border-radius: 6px;
+		}
+
+		.summary i { margin-right: 5px; color: var(--brand); }
+		.summary strong { color: var(--ink); }
+		.summary .is-missing { color: var(--note); font-weight: 600; }
+
+		/* table */
+		.timeline-table {
+			width: 100%;
+			border-collapse: separate;
+			border-spacing: 0;
+			table-layout: fixed;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		.timeline-table th {
+			padding: 7px 8px;
+			background: var(--brand);
+			color: #fff;
+			font-size: 9px;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-align: left;
+			text-transform: uppercase;
+		}
+
+		.timeline-table td {
+			padding: 5px 8px;
+			border-top: 1px solid var(--line);
+			vertical-align: top;
+		}
+
+		.timeline-table tr.day-start td { border-top: 1.5px solid #c9cde0; }
+		.timeline-table tr.is-tinted td:not(.col-guide, .day-description) { background: var(--day-tint); }
+
+		.timeline-table td.day-description {
+			padding: 6px 10px;
+			background: #f2f4fd;
+			color: #3b4170;
+			font-size: 10px;
+			font-style: italic;
+		}
+
+		.day-description i { margin-right: 6px; color: var(--brand); font-style: normal; }
+
+		.col-date { width: 11%; }
+		.col-time { width: 12%; }
+		.col-place { width: 15%; }
+		.col-activity { width: 32%; }
+		.col-pax { width: 10%; }
+		.col-guide { width: 20%; }
+
+		.col-date strong { display: block; color: var(--ink); font-size: 12px; }
+		.col-date span { color: var(--muted); font-size: 9px; }
+
+		.col-time { color: var(--ink); font-weight: 600; white-space: nowrap; }
+		.col-time span { color: var(--muted); font-weight: 500; }
+
+		.col-place { color: var(--muted); }
+
+		.activity-name { display: flex; gap: 6px; color: var(--ink); font-weight: 600; }
+		.activity-name i { flex: none; width: 12px; margin-top: 2px; color: var(--dot, var(--muted)); font-size: 9px; text-align: center; }
+		.is-activity .activity-name { font-weight: 500; }
+
+		.optional {
+			flex: none;
+			align-self: flex-start;
+			padding: 1px 5px;
+			background: var(--accent-soft);
+			border-radius: 4px;
+			color: var(--note);
+			font-size: 8px;
+			font-weight: 700;
+			text-transform: uppercase;
+		}
+
+		.activity-note { margin: 2px 0 0 18px; color: var(--note); font-size: 9.5px; }
+		.activity-note i { margin-right: 4px; }
+
+		.col-pax { color: var(--ink); }
+		.col-pax span { display: block; color: var(--muted); font-size: 9px; }
+
+		td.col-guide { vertical-align: middle; }
+		td.col-guide.has-guide { background: var(--guide); border-left: 3px solid #3bb273; }
+		.guide { color: var(--guide-ink); font-weight: 600; }
+		.guide span { display: block; color: var(--muted); font-size: 9px; font-weight: 500; }
+		.guide + .guide { margin-top: 4px; }
+
+		.doc-foot {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			gap: 4px 16px;
+			margin-top: 12px;
+			color: var(--muted);
+			font-size: 9px;
+		}
+
+		.empty { padding: 40px 16px; color: var(--muted); text-align: center; }
+
+		@page { size: A4 portrait; margin: 0; }
+
+		@media print {
+			body { background: #fff; }
+			.toolbar { display: none; }
+			.paper { width: auto; max-width: none; margin: 0; box-shadow: none; }
+			* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+			.timeline-table tr { break-inside: avoid; }
+		}
+
+		@media (max-width: 700px) {
+			.paper { padding: 12px; overflow-x: auto; }
+			.doc-head { flex-wrap: wrap; }
+			.timeline-table { min-width: 640px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="toolbar">
+		<i class="fa-solid fa-file-pdf"></i>
+		<span id="toolbar-title">Timeline</span>
+		<span class="spacer"></span>
+		<button type="button" class="is-light" onclick="window.close()"><i class="fa-solid fa-xmark"></i> Zatvori</button>
+		<button type="button" onclick="window.print()"><i class="fa-solid fa-download"></i> Spremi kao PDF</button>
+	</div>
+
+	<main class="paper" id="paper"></main>
+
+	<script src="data.js"></script>
+	<script>
+		const ADDED_SERVICES_KEY = 'raster-prototype-added-services';
+		const DAY_NOTES_KEY = 'raster-prototype-day-notes';
+		const DELETED_SERVICES_KEY = 'raster-prototype-deleted-services';
+		const GROUPS_KEY = 'raster-prototype-groups';
+		const TIMELINE_ITEMS_KEY = 'raster-prototype-timeline-items';
+
+		const WEEKDAYS = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+
+		/** Icon and colour per service type; activities (breakfast, departure…) stay neutral. */
+		const STOP_STYLES = {
+			'excursions': { icon: 'fa-route', color: '#1b84ff' },
+			'tickets': { icon: 'fa-ticket', color: '#0e9f9a' },
+			'restorants': { icon: 'fa-utensils', color: '#e8590c' },
+			'museum': { icon: 'fa-landmark', color: '#7048e8' },
+			'winery': { icon: 'fa-wine-glass', color: '#a61e4d' },
+			'national-park': { icon: 'fa-tree', color: '#2b8a3e' },
+			'free-time': { icon: 'fa-umbrella-beach', color: '#0c8599' },
+			'other': { icon: 'fa-star', color: '#5c677d' },
+			'activity': { icon: 'fa-circle', color: '#c3c7d6' },
+		};
+
+		function readStoredJson(key) {
+			try {
+				return JSON.parse(localStorage.getItem(key)) || {};
+			} catch (error) {
+				return {};
+			}
+		}
+
+		/** Groups saved before a group could have several drivers still carry driverName / driverPhone. */
+		function driversOf(group) {
+			if (group.drivers) {
+				return group.drivers;
+			}
+
+			return group.driverName || group.driverPhone ? [{ name: group.driverName || '', phone: group.driverPhone || '' }] : [];
+		}
+
+		function shortDate(value) {
+			const [, month, day] = value.split('-');
+
+			return day + '.' + month + '.';
+		}
+
+		function fullDate(value) {
+			return shortDate(value) + value.slice(0, 4) + '.';
+		}
+
+		function weekdayOf(value) {
+			const [year, month, day] = value.split('-').map(Number);
+
+			return WEEKDAYS[new Date(year, month - 1, day).getDay()];
+		}
+
+		function toDots(time) {
+			return time.replace(':', '.');
+		}
+
+		function element(tagName, className, text) {
+			const node = document.createElement(tagName);
+
+			if (className) {
+				node.className = className;
+			}
+
+			if (text !== undefined && text !== null) {
+				node.textContent = text;
+			}
+
+			return node;
+		}
+
+		function icon(name) {
+			return element('i', 'fa-solid ' + name);
+		}
+
+		/** Itinerary items by id, including services added after the data export ("Dodaj uslugu"). */
+		function itineraryItemsOf(offer) {
+			const items = offer.days.flatMap(day => day.items);
+			const addedItems = readStoredJson(ADDED_SERVICES_KEY)[offer.id] || [];
+
+			return new Map([...items, ...addedItems].map(item => [item.id, item]));
+		}
+
+		function stopStyleOf(row, itineraryItems) {
+			if (row.isActivity) {
+				return STOP_STYLES['activity'];
+			}
+
+			return STOP_STYLES[itineraryItems.get(row.offerDayItemId)?.serviceType] || STOP_STYLES['other'];
+		}
+
+		function guidesOf(row) {
+			return (row.guideIds || [])
+				.map(guideId => window.TOUR_GUIDES.find(guide => guide.id === guideId))
+				.filter(Boolean);
+		}
+
+		function guideKeyOf(row) {
+			return guidesOf(row).map(guide => guide.id).join(',');
+		}
+
+		/**
+		 * One line per timeline row, plus an empty line for days without rows; a day with a short description starts
+		 * with a description line. The date cell spans its day and the vodič cell spans consecutive rows with the same
+		 * guides, even across days (a description line breaks that span).
+		 *
+		 * @returns {Array<{ date: string, dayIndex: number, isDayStart: boolean, daySpan: number, description: ?string, row: ?Object, guideKey: ?string }>}
+		 */
+		function tableLinesOf(offer, rows, dayNotes) {
+			return offer.days.flatMap((day, dayIndex) => {
+				const dayRows = rows
+					.filter(row => row.date === day.date)
+					.sort((first, second) => (first.startsAt || '99:99').localeCompare(second.startsAt || '99:99'));
+				const description = dayNotes[day.date] || null;
+				const rowsOrPlaceholder = dayRows.length ? dayRows : (description ? [] : [null]);
+				const dayLines = [
+					...(description ? [{ description, row: null, guideKey: null }] : []),
+					...rowsOrPlaceholder.map(row => ({ description: null, row, guideKey: row ? guideKeyOf(row) : '' })),
+				];
+
+				return dayLines.map((line, lineIndex) => ({
+					...line,
+					date: day.date,
+					dayIndex,
+					isDayStart: lineIndex === 0,
+					daySpan: dayLines.length,
+				}));
+			});
+		}
+
+		function renderHead(offer, group, rows) {
+			const fragment = document.createDocumentFragment();
+			const head = element('header', 'doc-head');
+			const wordmark = element('div', 'wordmark');
+			const title = element('div', 'doc-title');
+			const reference = element('div', 'doc-ref');
+			const summary = element('div', 'summary');
+			const drivers = driversOf(group);
+			const paxCounts = rows.map(row => row.pax).filter(Number.isFinite);
+			const addSummary = (iconName, label, value, isMissing = false) => {
+				const item = element('span');
+
+				item.append(icon(iconName), label + ' ', element('strong', isMissing ? 'is-missing' : null, value));
+				summary.appendChild(item);
+			};
+
+			wordmark.append('tilago', element('span', null, '·'));
+			title.append(element('h1', null, 'Timeline · ' + offer.client.name), element('div', null, offer.name));
+			reference.append(element('strong', null, shortDate(offer.departure) + ' – ' + fullDate(offer.return)), offer.ref + ' · ' + group.name);
+			head.append(wordmark, title, reference);
+
+			addSummary('fa-bus', 'Grupa', group.name + (paxCounts.length ? ' · ' + Math.max(...paxCounts) + ' pax' : ''));
+			addSummary('fa-hotel', 'Hotel', offer.hotels.map(hotel => hotel.name + ', ' + hotel.city + ' (' + hotel.board + ')').join(' / '));
+
+			if (drivers.length) {
+				addSummary('fa-id-card', drivers.length > 1 ? 'Vozači' : 'Vozač', drivers
+					.map(driver => (driver.name || 'Vozač') + (driver.phone ? ' ' + driver.phone : '') + (driver.note ? ' (' + driver.note + ')' : ''))
+					.join(', '));
+			} else {
+				addSummary('fa-id-card', 'Vozač', 'TBA', true);
+			}
+
+			fragment.append(head, summary);
+
+			return fragment;
+		}
+
+		function renderTable(offer, group, rows, dayNotes) {
+			const table = element('table', 'timeline-table');
+			const headRow = element('tr');
+			const body = element('tbody');
+			const itineraryItems = itineraryItemsOf(offer);
+			const lines = tableLinesOf(offer, rows, dayNotes);
+
+			[['col-date', 'Datum'], ['col-time', 'Vrijeme'], ['col-place', 'Mjesto'], ['col-activity', 'Izlet'], ['col-pax', 'Pax / Bus'], ['col-guide', 'Vodič']]
+				.forEach(([className, label]) => headRow.appendChild(element('th', className, label)));
+			table.appendChild(element('thead')).appendChild(headRow);
+			table.appendChild(body);
+
+			lines.forEach((line, lineIndex) => {
+				const row = line.row;
+				const tableRow = element('tr', [line.isDayStart ? 'day-start' : '', line.dayIndex % 2 ? 'is-tinted' : '', row?.isActivity ? 'is-activity' : ''].join(' ').trim());
+
+				if (line.isDayStart) {
+					const dateCell = element('td', 'col-date');
+
+					dateCell.rowSpan = line.daySpan;
+					dateCell.append(element('strong', null, shortDate(line.date)), element('span', null, weekdayOf(line.date)));
+					tableRow.appendChild(dateCell);
+				}
+
+				if (line.description) {
+					const descriptionCell = element('td', 'day-description');
+
+					descriptionCell.colSpan = 5;
+					descriptionCell.append(icon('fa-circle-info'), line.description);
+					tableRow.appendChild(descriptionCell);
+					body.appendChild(tableRow);
+
+					return;
+				}
+
+				const timeCell = element('td', 'col-time', row?.startsAt ? toDots(row.startsAt) : '');
+
+				if (row?.startsAt && row.endsAt) {
+					timeCell.appendChild(element('span', null, ' – ' + toDots(row.endsAt)));
+				}
+
+				tableRow.appendChild(timeCell);
+				tableRow.appendChild(element('td', 'col-place', row?.meetingPoint || ''));
+
+				const activityCell = element('td', 'col-activity');
+
+				if (row) {
+					const style = stopStyleOf(row, itineraryItems);
+					const name = element('div', 'activity-name');
+
+					activityCell.style.setProperty('--dot', style.color);
+					name.append(icon(style.icon), element('span', null, row.name));
+
+					if (row.isOptional) {
+						name.appendChild(element('span', 'optional', 'Fakultativno'));
+					}
+
+					activityCell.appendChild(name);
+
+					if (row.note) {
+						const note = element('div', 'activity-note');
+
+						note.append(icon('fa-circle-info'), row.note);
+						activityCell.appendChild(note);
+					}
+				} else {
+					activityCell.appendChild(element('span', 'col-place', 'Nema planiranih stavki'));
+				}
+
+				tableRow.appendChild(activityCell);
+
+				const paxCell = element('td', 'col-pax');
+
+				if (row && Number.isFinite(row.pax)) {
+					paxCell.append(row.pax + ' pax', element('span', null, group.name));
+				}
+
+				tableRow.appendChild(paxCell);
+
+				if (!line.guideKey || lines[lineIndex - 1]?.guideKey !== line.guideKey) {
+					const guideCell = element('td', 'col-guide' + (line.guideKey ? ' has-guide' : ''));
+					let guideSpan = 1;
+
+					while (line.guideKey && lines[lineIndex + guideSpan]?.guideKey === line.guideKey) {
+						guideSpan++;
+					}
+
+					guideCell.rowSpan = guideSpan;
+
+					if (row) {
+						guidesOf(row).forEach(guide => {
+							const guideLine = element('div', 'guide', guide.name);
+
+							guideLine.appendChild(element('span', null, [guide.phone, guide.languages].filter(Boolean).join(' · ')));
+							guideCell.appendChild(guideLine);
+						});
+					}
+
+					tableRow.appendChild(guideCell);
+				}
+
+				body.appendChild(tableRow);
+			});
+
+			return table;
+		}
+
+		function renderTimeline() {
+			const parameters = new URLSearchParams(location.search);
+			const offer = window.OFFERS.find(existing => existing.id === parameters.get('offer'));
+			const group = (readStoredJson(GROUPS_KEY)[offer?.id] || []).find(existing => existing.id === parameters.get('group'));
+			const paper = document.getElementById('paper');
+
+			if (!offer || !group) {
+				paper.appendChild(element('div', 'empty', 'Grupa nije pronađena — otvori PDF iz timelinea grupe.'));
+
+				return;
+			}
+
+			const deletedServiceIds = readStoredJson(DELETED_SERVICES_KEY)[offer.id] || [];
+			const rows = (readStoredJson(TIMELINE_ITEMS_KEY)[offer.id] || [])
+				.filter(row => row.groupId === group.id && !deletedServiceIds.includes(row.offerDayItemId));
+			const dayNotes = readStoredJson(DAY_NOTES_KEY)[group.id] || {};
+			const foot = element('footer', 'doc-foot');
+
+			document.title = 'Timeline ' + offer.ref + ' ' + group.name;
+			document.getElementById('toolbar-title').textContent = 'Timeline · ' + offer.ref + ' · ' + group.name;
+
+			foot.append(element('span', null, 'Travel TILAGO d.o.o. · operations@travel-tilago.hr · +385 91 6189 394'), element('span', null, 'KAM: ' + (offer.kam || '—')));
+			paper.append(renderHead(offer, group, rows), renderTable(offer, group, rows, dayNotes), foot);
+		}
+
+		renderTimeline();
+	</script>
+</body>
+</html>
