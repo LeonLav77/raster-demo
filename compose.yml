@@ -1,0 +1,22 @@
+services:
+  raster-demo:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.raster-demo.rule=Host(`raster-demo.leon-home-lab.ddns.net`)"
+      - "traefik.http.routers.raster-demo.entrypoints=https"
+      - "traefik.http.routers.raster-demo.tls=true"
+      - "traefik.http.routers.raster-demo.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.raster-demo.middlewares=raster-demo-auth"
+      - "traefik.http.middlewares.raster-demo-auth.basicauth.users=<USER_HASH>"
+      - "traefik.http.services.raster-demo.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik_proxy"
+
+networks:
+  traefik_proxy:
+    external: true
