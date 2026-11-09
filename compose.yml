@@ -3,7 +3,7 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     volumes:
-      - ./site:/usr/share/nginx/html:ro
+      - ./:/usr/share/nginx/html:ro
     networks:
       - traefik_proxy
     labels:
