@@ -119,8 +119,8 @@
 
 		.diagram {
 			position: relative;
-			width: 2030px;
-			height: 1540px;
+			width: 2520px;
+			height: 1190px;
 		}
 
 		.relations {
@@ -344,7 +344,7 @@
 		 */
 		const ENTITIES = [
 			{
-				name: 'offers', kind: 'existing', x: 40, y: 40, columns: [
+				name: 'offers', kind: 'existing', x: 80, y: 40, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'display_id', type: 'int unsigned' },
 					{ name: 'name', type: 'json' },
@@ -359,7 +359,7 @@
 				], more: 37,
 			},
 			{
-				name: 'offer_groups', kind: 'new', x: 450, y: 40, columns: [
+				name: 'offer_groups', kind: 'new', x: 490, y: 66, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE' },
 					{ name: 'name', type: 'varchar(50)', note: 'npr. "Bus 1"' },
@@ -368,7 +368,7 @@
 				],
 			},
 			{
-				name: 'offer_group_drivers', kind: 'new', x: 450, y: 290, columns: [
+				name: 'offer_group_drivers', kind: 'new', x: 490, y: 320, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_group_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE' },
 					{ name: 'name', type: 'varchar(100)', nullable: true },
@@ -379,7 +379,7 @@
 				],
 			},
 			{
-				name: 'timelines', kind: 'new', x: 860, y: 40, columns: [
+				name: 'timelines', kind: 'new', x: 900, y: 39, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_group_id', type: 'char(36)', key: 'FK UQ', note: 'ON DELETE CASCADE · grupa ima jedan timeline' },
 					{ name: 'is_edited_separately', type: 'tinyint(1)', note: 'default 0 · 1 = izmjene iz "Sve grupe" preskaču ovu grupu' },
@@ -391,7 +391,7 @@
 				],
 			},
 			{
-				name: 'timeline_items', kind: 'new', x: 1270, y: 40, columns: [
+				name: 'timeline_items', kind: 'new', x: 1750, y: 12, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'timeline_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE · jedan bus' },
 					{ name: 'sync_key', type: 'char(36)', note: 'ista stavka u svim busevima · UQ (timeline_id, sync_key)' },
@@ -412,7 +412,7 @@
 				],
 			},
 			{
-				name: 'activities', kind: 'new', x: 1710, y: 720, width: 250, columns: [
+				name: 'activities', kind: 'new', x: 2190, y: 500, width: 250, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'name', type: 'json', note: 'translatable: hr, en, de, it, si, cz' },
 					{ name: 'created_at', type: 'timestamp', nullable: true },
@@ -420,13 +420,13 @@
 				],
 			},
 			{
-				name: 'timeline_item_tour_guide', kind: 'new', x: 1710, y: 120, width: 250, columns: [
+				name: 'timeline_item_tour_guide', kind: 'new', x: 2190, y: 12, width: 250, columns: [
 					{ name: 'timeline_item_id', type: 'char(36)', key: 'PK FK' },
 					{ name: 'tour_guide_id', type: 'char(36)', key: 'PK FK' },
 				],
 			},
 			{
-				name: 'tour_guides', kind: 'existing', x: 1710, y: 340, width: 250, columns: [
+				name: 'tour_guides', kind: 'existing', x: 2190, y: 160, width: 250, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'name', type: 'varchar(50)' },
 					{ name: 'email', type: 'varchar(100)' },
@@ -439,7 +439,7 @@
 				],
 			},
 			{
-				name: 'raster_services', kind: 'new', x: 1270, y: 830, width: 380, columns: [
+				name: 'raster_services', kind: 'new', x: 1310, y: 578, width: 380, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', references: 'offers' },
 					{ name: 'offer_day_item_id', type: 'char(36)', key: 'FK UQ', nullable: true, note: 'ON DELETE SET NULL · jedna usluga = jedan red · null = obrisana usluga' },
@@ -455,7 +455,7 @@
 				],
 			},
 			{
-				name: 'invoices', kind: 'new', x: 450, y: 880, columns: [
+				name: 'invoices', kind: 'new', x: 80, y: 490, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE · svaki račun pripada ponudi' },
 					{ name: 'raster_service_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE CASCADE · račun usluge · null = ostali računi ponude' },
@@ -471,7 +471,7 @@
 				],
 			},
 			{
-				name: 'offer_days', kind: 'existing', x: 450, y: 580, columns: [
+				name: 'offer_days', kind: 'existing', x: 490, y: 680, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK' },
 					{ name: 'date', type: 'date' },
@@ -482,7 +482,7 @@
 				],
 			},
 			{
-				name: 'offer_day_items', kind: 'existing', x: 860, y: 580, width: 340, columns: [
+				name: 'offer_day_items', kind: 'existing', x: 900, y: 653, width: 340, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_day_id', type: 'char(36)', key: 'FK' },
 					{ name: 'item_type', type: 'varchar(191)', nullable: true, note: 'morph: Service / TourGuide / Room' },
@@ -499,22 +499,22 @@
 		/**
 		 * Each relation goes from the FK column to the referenced column. `fromEnd` / `toEnd` are crow's foot ends:
 		 * one (exactly one), zeroOrOne, many (zero or many). `side` forces both ends onto one side of their tables;
-		 * `elbowShift` moves the vertical segment so lines into the same table don't overlap.
+		 * `elbowShift` moves the vertical segment (also for `side`) so lines into the same table don't overlap.
 		 */
 		const RELATIONS = [
 			{ from: 'offer_groups.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
-			{ from: 'offer_group_drivers.offer_group_id', to: 'offer_groups.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', side: 'right' },
+			{ from: 'offer_days.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one' },
+			{ from: 'invoices.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', side: 'left' },
 			{ from: 'timelines.offer_group_id', to: 'offer_groups.id', fromEnd: 'zeroOrOne', toEnd: 'one', label: 'hasOne' },
+			{ from: 'offer_group_drivers.offer_group_id', to: 'offer_groups.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', side: 'right', elbowShift: -14 },
 			{ from: 'timeline_items.timeline_id', to: 'timelines.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
-			{ from: 'timeline_items.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true, side: 'left' },
+			{ from: 'offer_day_items.offer_day_id', to: 'offer_days.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
+			{ from: 'raster_services.offer_day_item_id', to: 'offer_day_items.id', fromEnd: 'zeroOrOne', toEnd: 'zeroOrOne', label: 'hasOne', isOptional: true },
+			{ from: 'timeline_items.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true },
+			{ from: 'invoices.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'hasMany', isOptional: true },
 			{ from: 'timeline_item_tour_guide.timeline_item_id', to: 'timeline_items.id', fromEnd: 'many', toEnd: 'one', label: 'belongsToMany' },
 			{ from: 'timeline_item_tour_guide.tour_guide_id', to: 'tour_guides.id', fromEnd: 'many', toEnd: 'one', side: 'right' },
-			{ from: 'timeline_items.activity_id', to: 'activities.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true, elbowShift: 30 },
-			{ from: 'raster_services.offer_day_item_id', to: 'offer_day_items.id', fromEnd: 'zeroOrOne', toEnd: 'zeroOrOne', label: 'hasOne', isOptional: true, elbowShift: -20 },
-			{ from: 'invoices.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', elbowShift: -16 },
-			{ from: 'invoices.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'hasMany', isOptional: true, elbowShift: 216 },
-			{ from: 'offer_days.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
-			{ from: 'offer_day_items.offer_day_id', to: 'offer_days.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
+			{ from: 'timeline_items.activity_id', to: 'activities.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true },
 		];
 
 		const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -609,9 +609,9 @@
 				const to = anchorOf(relation.to, toSide);
 				const fromOutward = fromSide === 'left' ? -1 : 1;
 				const toOutward = toSide === 'left' ? -1 : 1;
-				const elbowX = relation.side
+				const elbowX = (relation.side
 					? (relation.side === 'right' ? Math.max(from.x, to.x) + 34 : Math.min(from.x, to.x) - 34)
-					: (from.x + to.x) / 2 + (relation.elbowShift || 0);
+					: (from.x + to.x) / 2) + (relation.elbowShift || 0);
 
 				svgElement('path', {
 					class: 'line' + (relation.isOptional ? ' is-optional' : ''),
