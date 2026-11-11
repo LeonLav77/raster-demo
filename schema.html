@@ -120,7 +120,7 @@
 		.diagram {
 			position: relative;
 			width: 2520px;
-			height: 1190px;
+			height: 1240px;
 		}
 
 		.relations {
@@ -266,7 +266,7 @@
 		<div class="page-head">
 			<div>
 				<h1>Timeline — ER dijagram</h1>
-				<p>Ponuda ima više grupa (buseva), grupa ima jedan timeline, timeline ima više stavki. Usluga ide preko <code>raster_services</code>, aktivnost ima svoj naziv i opcionalno <code>activity_id</code>. Postojeće tablice prikazane su sa stvarnim stupcima iz baze.</p>
+				<p>Ponuda ima više grupa (buseva), grupa ima više stavki timelinea. Usluga ide preko <code>service_bookings</code>, aktivnost ima svoj naziv i opcionalno <code>activity_id</code>. Postojeće tablice prikazane su sa stvarnim stupcima iz baze.</p>
 			</div>
 			<div class="legend">
 				<span><svg width="44" height="14"><line x1="0" y1="7" x2="44" y2="7" class="marker" stroke="#3f4254" stroke-width="1.4"/><line x1="30" y1="1" x2="30" y2="13" stroke="#3f4254" stroke-width="1.4"/><line x1="36" y1="1" x2="36" y2="13" stroke="#3f4254" stroke-width="1.4"/></svg> točno jedan</span>
@@ -291,11 +291,11 @@
 			</div>
 			<div class="note-card">
 				<h3>"Sve grupe" i <code>sync_key</code></h3>
-				<p>Svaki bus ima svoje fizičke retke. Kopije iste stavke u različitim busevima dijele <code>sync_key</code> (<code>UQ (timeline_id, sync_key)</code>: najviše jedna kopija po busu). <code>sync_key</code> je jedino pravilo za sync, za usluge i aktivnosti: izmjena u "Sve grupe" ažurira sve retke s tim ključem u grupama čiji timeline ima <code>is_edited_separately = 0</code>. Usluga dobiva jedan ključ po redu u <code>raster_services</code>, isti u svim busevima; aktivnost dodana u "Sve grupe" također jedan ključ za sve buseve; stavka dodana samo jednom busu dobiva vlastiti ključ i ne sinkronizira se. Nova grupa kopira stavke odabrane grupe s istim ključevima, bez usluga obrisanih iz ponude.</p>
+				<p>Svaki bus ima svoje fizičke retke. Kopije iste stavke u različitim busevima dijele <code>sync_key</code> (<code>UQ (offer_group_id, sync_key)</code>: najviše jedna kopija po busu). <code>sync_key</code> je jedino pravilo za sync, za usluge i aktivnosti: izmjena u "Sve grupe" ažurira sve retke s tim ključem u grupama s <code>is_edited_separately = 0</code>. Usluga dobiva jedan ključ po redu u <code>service_bookings</code>, isti u svim busevima; aktivnost dodana u "Sve grupe" također jedan ključ za sve buseve; stavka dodana samo jednom busu dobiva vlastiti ključ i ne sinkronizira se. Nova grupa kopira stavke odabrane grupe s istim ključevima, bez usluga obrisanih iz ponude.</p>
 			</div>
 			<div class="note-card">
 				<h3>Vrste stavki</h3>
-				<p><strong>Usluga</strong>: <code>type = service</code>, <code>raster_service_id</code> postavljen, <code>name</code> null (naziv iz ponude ili <code>item_snapshot</code> na rasteru). <strong>Aktivnost iz kataloga</strong>: <code>type = activity</code>, <code>activity_id</code> postavljen, <code>name</code> kopiran iz kataloga. <strong>Ad hoc aktivnost</strong>: <code>type = activity</code>, bez <code>activity_id</code>, <code>name</code> upisan samo na jeziku ponude. CHECK: <code>(type = 'service' AND raster_service_id IS NOT NULL) OR (type = 'activity' AND raster_service_id IS NULL AND name IS NOT NULL)</code>.</p>
+				<p><strong>Usluga</strong>: <code>type = service</code>, <code>service_booking_id</code> postavljen, <code>name</code> null (naziv iz ponude ili <code>item_snapshot</code> na rasteru). <strong>Aktivnost iz kataloga</strong>: <code>type = activity</code>, <code>activity_id</code> postavljen, <code>name</code> kopiran iz kataloga. <strong>Ad hoc aktivnost</strong>: <code>type = activity</code>, bez <code>activity_id</code>, <code>name</code> upisan samo na jeziku ponude. CHECK: <code>(type = 'service' AND service_booking_id IS NOT NULL) OR (type = 'activity' AND service_booking_id IS NULL AND name IS NOT NULL)</code>.</p>
 			</div>
 			<div class="note-card">
 				<h3>Aktivnosti: <code>activities</code></h3>
@@ -303,7 +303,7 @@
 			</div>
 			<div class="note-card">
 				<h3>Veza na ponudu preko rastera</h3>
-				<p>Stavka usluge ne veže se izravno na <code>offer_day_items</code>, nego na <code>raster_services</code> (<code>raster_service_id</code>, <code>UQ (timeline_id, raster_service_id)</code>: usluga je najviše jednom po busu). Raster red veže se na stavku ponude s <code>ON DELETE SET NULL</code>, pa brisanje usluge iz ponude ostavlja i raster red (snapshot) i stavke timelinea. Usluga na dva dana u ponudi su dvije stavke ponude, dakle dva raster reda.</p>
+				<p>Stavka usluge ne veže se izravno na <code>offer_day_items</code>, nego na <code>service_bookings</code> (<code>service_booking_id</code>, <code>UQ (offer_group_id, service_booking_id)</code>: usluga je najviše jednom po busu). Red u <code>service_bookings</code> veže se na stavku ponude s <code>ON DELETE SET NULL</code>, pa brisanje usluge iz ponude ostavlja i taj red (snapshot) i stavke timelinea. Usluga na dva dana u ponudi su dvije stavke ponude, dakle dva reda.</p>
 			</div>
 			<div class="note-card">
 				<h3>Po grupi: pax, vodiči, vozač, status</h3>
@@ -311,27 +311,27 @@
 			</div>
 			<div class="note-card">
 				<h3>Status po busu</h3>
-				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Kad se status busa razlikuje od <code>raster_services.status</code>, Raster uz uslugu ispisuje "Grupa X – drugačiji status".</p>
+				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Kad se status busa razlikuje od <code>service_bookings.status</code>, Raster uz uslugu ispisuje "Grupa X – drugačiji status".</p>
 			</div>
 			<div class="note-card">
 				<h3>IN / OUT cijene</h3>
-				<p>IN / OUT cijene nisu na stavkama timelinea nego u <code>raster_services</code>: jedna cijena po paxu po usluzi za cijelu ponudu (ne po grupi). To su analitičke cijene koje se uspoređuju s nabavnom / prodajnom cijenom iz ponude (<code>offer_day_items</code>) radi ispravka kalkulacije. Ne mijenjaju ponudu.</p>
+				<p>IN / OUT cijene nisu na stavkama timelinea nego u <code>service_bookings</code>: jedna cijena po paxu po usluzi za cijelu ponudu (ne po grupi). To su analitičke cijene koje se uspoređuju s nabavnom / prodajnom cijenom iz ponude (<code>offer_day_items</code>) radi ispravka kalkulacije. Ne mijenjaju ponudu.</p>
 			</div>
 			<div class="note-card">
-				<h3>Raster usluga: <code>raster_services</code></h3>
-				<p>Jedan red po usluzi ponude, zajednički za sve grupe: status, IN / OUT, najava partneru i računi usluge. Stavke usluga na timelineu vise na tom redu, pa red mora postojati za svaku uslugu koja je na timelineu. <code>offer_change</code> (added / removed / changed) boja redak na rasteru kad se ponuda promijeni. <strong>Brisanje usluge:</strong> <code>deleting</code> hook na <code>OfferDayItem</code> — ako ponuda ima timeline, u <code>item_snapshot</code> se kopira stavka, a <code>offer_day_item_id</code> postaje null; raster je i dalje prikazuje kao "Obrisana usluga" radi poziva i storna. Ako ponuda nema timeline, red se briše zajedno sa stavkom (CASCADE na njegove stavke timelinea i račune). <code>offer_id</code> zato stoji na tablici.</p>
+				<h3>Raster usluga: <code>service_bookings</code></h3>
+				<p>Jedan red po usluzi ponude, zajednički za sve grupe: status, IN / OUT, najava partneru i računi usluge. Stavke usluga na timelineu vise na tom redu, pa red mora postojati za svaku uslugu koja je na timelineu. <code>offer_change</code> (added / removed / changed) boja redak na rasteru kad se ponuda promijeni. <code>item_snapshot</code> se puni kod kreiranja reda i osvježava kod svake izmjene stavke ponude, pa je uvijek zadnja verzija stavke. <code>note</code> je interna napomena uz rezervaciju. <strong>Brisanje usluge:</strong> <code>deleting</code> hook na <code>OfferDayItem</code> — ako ponuda ima grupe, <code>offer_day_item_id</code> postaje null, a <code>item_snapshot</code> čuva zadnju verziju stavke; raster je i dalje prikazuje kao "Obrisana usluga" radi poziva i storna. Ako ponuda nema grupa, red se briše zajedno sa stavkom (CASCADE na njegove stavke timelinea i račune). <code>offer_id</code> zato stoji na tablici.</p>
 			</div>
 			<div class="note-card">
 				<h3>Financije: <code>invoices</code></h3>
-				<p>Nova tablica <code>invoices</code> je temelj budućeg dijela CMS-a za računovodstvo: jedan red = jedan PDF računa. Sama datoteka ide preko <code>MediaStorage</code> na model <code>Invoice</code> (jedna datoteka po redu), a status, napomena i tko je što napravio su pravi stupci, pa se po njima može filtrirati i raditi izvještaje. "Račun usluga" (po usluzi) ima <code>type = service</code> i <code>raster_service_id</code>, a "Ostali računi" (po ponudi) <code>type = other</code> bez <code>raster_service_id</code>. Tab "Financije" je popis <code>invoices</code> po ponudi. Status <strong>Novo</strong> → <strong>Završeno</strong> (gumb) puni <code>completed_at</code> i <code>completed_by_user_id</code>. Brisanje računa je soft delete; brisanje ponude ili raster reda briše i njihove račune (CASCADE), a brisanje korisnika ostavlja račun s praznim <code>uploaded_by_user_id</code> / <code>completed_by_user_id</code> (SET NULL).</p>
+				<p>Nova tablica <code>invoices</code> je temelj budućeg dijela CMS-a za računovodstvo: jedan red = jedan PDF računa. Sama datoteka ide preko <code>MediaStorage</code> na model <code>Invoice</code> (jedna datoteka po redu), a status, napomena i tko je što napravio su pravi stupci, pa se po njima može filtrirati i raditi izvještaje. "Račun usluga" (po usluzi) ima <code>type = service</code> i <code>service_booking_id</code>, a "Ostali računi" (po ponudi) <code>type = other</code> bez <code>service_booking_id</code>. Tab "Financije" je popis <code>invoices</code> po ponudi. Status <strong>Novo</strong> → <strong>Završeno</strong> (gumb) puni <code>completed_at</code> i <code>completed_by_user_id</code>. Brisanje računa je soft delete; brisanje ponude ili reda u <code>service_bookings</code> briše i njihove račune (CASCADE), a brisanje korisnika ostavlja račun s praznim <code>uploaded_by_user_id</code> / <code>completed_by_user_id</code> (SET NULL).</p>
 			</div>
 			<div class="note-card">
 				<h3>Napomene za najavu</h3>
-				<p><code>timelines.notes</code> je rich text po grupi (rooming lista, prehrana, smještaj vodiča, ostali izleti…). Ne sinkronizira se kroz "Sve grupe" i ide u najavu vodiču, ne na timeline PDF. <code>timelines.day_notes</code> (kratki opis po datumu) ide na timeline PDF.</p>
+				<p><code>offer_groups.notes</code> je rich text po grupi (rooming lista, prehrana, smještaj vodiča, ostali izleti…). Ne sinkronizira se kroz "Sve grupe" i ide u najavu vodiču, ne na timeline PDF. <code>offer_groups.day_notes</code> (kratki opis po datumu) ide na timeline PDF.</p>
 			</div>
 			<div class="note-card">
 				<h3>Najave</h3>
-				<p><strong>Najava vodiču</strong> (po grupi, <code>timelines.announced_at</code>): timeline PDF + <code>timelines.notes</code> + vaučeri svih usluga grupe u privitku. <strong>Najava partneru</strong> (<code>raster_services.partner_announced_at</code>): tekstualni sažetak usluge iz timelinea uz molbu za pisanu potvrdu, bez vaučera. Šalje se s Rastera usluga, jednom po usluzi za sve grupe. Slanjem se status usluge automatski postavlja na "Najavljeno"; inače se status mijenja ručno. Sadržaj po grupi: dan i vrijeme, broj gostiju (+ vodič + vozač), vodič, vozač; uz to slobodni tekst. Slobodni tekst se sprema u <code>raster_services.partner_announcement_text</code>.</p>
+				<p><strong>Najava vodiču</strong> (po grupi, <code>offer_groups.announced_at</code>): timeline PDF + <code>offer_groups.notes</code> + vaučeri svih usluga grupe u privitku. <strong>Najava partneru</strong> (<code>service_bookings.partner_announced_at</code>): tekstualni sažetak usluge iz timelinea uz molbu za pisanu potvrdu, bez vaučera. Šalje se s Rastera usluga, jednom po usluzi za sve grupe. Slanjem se status usluge automatski postavlja na "Najavljeno"; inače se status mijenja ručno. Sadržaj po grupi: dan i vrijeme, broj gostiju (+ vodič + vozač), vodič, vozač; uz to slobodni tekst. Slobodni tekst se sprema u <code>service_bookings.partner_announcement_text</code>.</p>
 			</div>
 		</div>
 	</main>
@@ -363,12 +363,16 @@
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE' },
 					{ name: 'name', type: 'varchar(50)', note: 'npr. "Bus 1"' },
+					{ name: 'is_edited_separately', type: 'tinyint(1)', note: 'default 0 · 1 = izmjene iz "Sve grupe" preskaču ovu grupu' },
+					{ name: 'notes', type: 'text', nullable: true, note: 'RTE · napomene za najavu vodiču' },
+					{ name: 'day_notes', type: 'json', nullable: true, note: '{datum: kratki opis dana} · ide na timeline PDF' },
+					{ name: 'announced_at', type: 'timestamp', nullable: true, note: 'najava vodiču poslana' },
 					{ name: 'created_at', type: 'timestamp', nullable: true },
 					{ name: 'updated_at', type: 'timestamp', nullable: true },
 				],
 			},
 			{
-				name: 'offer_group_drivers', kind: 'new', x: 490, y: 320, columns: [
+				name: 'offer_group_drivers', kind: 'new', x: 900, y: 180, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_group_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE' },
 					{ name: 'name', type: 'varchar(100)', nullable: true },
@@ -379,24 +383,12 @@
 				],
 			},
 			{
-				name: 'timelines', kind: 'new', x: 900, y: 39, columns: [
-					{ name: 'id', type: 'char(36)', key: 'PK' },
-					{ name: 'offer_group_id', type: 'char(36)', key: 'FK UQ', note: 'ON DELETE CASCADE · grupa ima jedan timeline' },
-					{ name: 'is_edited_separately', type: 'tinyint(1)', note: 'default 0 · 1 = izmjene iz "Sve grupe" preskaču ovu grupu' },
-					{ name: 'notes', type: 'text', nullable: true, note: 'RTE · napomene za najavu vodiču' },
-					{ name: 'day_notes', type: 'json', nullable: true, note: '{datum: kratki opis dana} · ide na timeline PDF' },
-					{ name: 'announced_at', type: 'timestamp', nullable: true, note: 'najava vodiču poslana' },
-					{ name: 'created_at', type: 'timestamp', nullable: true },
-					{ name: 'updated_at', type: 'timestamp', nullable: true },
-				],
-			},
-			{
 				name: 'timeline_items', kind: 'new', x: 1750, y: 12, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
-					{ name: 'timeline_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE · jedan bus' },
-					{ name: 'sync_key', type: 'char(36)', note: 'ista stavka u svim busevima · UQ (timeline_id, sync_key)' },
+					{ name: 'offer_group_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE · jedan bus' },
+					{ name: 'sync_key', type: 'char(36)', note: 'ista stavka u svim busevima · UQ (offer_group_id, sync_key)' },
 					{ name: 'type', type: 'varchar(20)', note: 'enum: service | activity' },
-					{ name: 'raster_service_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE CASCADE · usluga · UQ (timeline_id, raster_service_id)' },
+					{ name: 'service_booking_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE CASCADE · usluga · UQ (offer_group_id, service_booking_id)' },
 					{ name: 'activity_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE SET NULL · aktivnost iz kataloga (opcionalno)' },
 					{ name: 'name', type: 'json', nullable: true, note: 'aktivnost: kopija iz kataloga ili upisano (samo jezik ponude) · usluga: null' },
 					{ name: 'date', type: 'date', note: 'kod inicijalizacije ← offer_days.date' },
@@ -439,17 +431,18 @@
 				],
 			},
 			{
-				name: 'raster_services', kind: 'new', x: 1310, y: 578, width: 380, columns: [
+				name: 'service_bookings', kind: 'new', x: 1310, y: 578, width: 380, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', references: 'offers' },
 					{ name: 'offer_day_item_id', type: 'char(36)', key: 'FK UQ', nullable: true, note: 'ON DELETE SET NULL · jedna usluga = jedan red · null = obrisana usluga' },
-					{ name: 'item_snapshot', type: 'json', nullable: true, note: 'kopija stavke u trenutku brisanja' },
+					{ name: 'item_snapshot', type: 'json', nullable: true, note: 'kopija stavke ponude · puni se kod kreiranja, osvježava kod svake izmjene stavke' },
 					{ name: 'status', type: 'varchar(20)', note: 'enum: pending | reserved | announced | cancelled · default pending' },
-					{ name: 'analytical_in_price', type: 'decimal(10,2)', nullable: true, note: 'IN · po pax · stvarna nabavna (analitika)' },
-					{ name: 'analytical_out_price', type: 'decimal(10,2)', nullable: true, note: 'OUT · po pax · stvarna prodajna (analitika)' },
+					{ name: 'analytics_price_in', type: 'decimal(10,2)', nullable: true, note: 'IN · po pax · stvarna nabavna (analitika)' },
+					{ name: 'analytics_price_out', type: 'decimal(10,2)', nullable: true, note: 'OUT · po pax · stvarna prodajna (analitika)' },
 					{ name: 'offer_change', type: 'varchar(20)', nullable: true, note: 'enum: added | removed | changed · boja retka' },
 					{ name: 'partner_announced_at', type: 'timestamp', nullable: true, note: 'najava partneru poslana (za sve grupe)' },
 					{ name: 'partner_announcement_text', type: 'text', nullable: true, note: 'slobodni tekst najave partneru' },
+					{ name: 'note', type: 'text', nullable: true, note: 'interna napomena uz rezervaciju' },
 					{ name: 'created_at', type: 'timestamp', nullable: true },
 					{ name: 'updated_at', type: 'timestamp', nullable: true },
 				],
@@ -458,8 +451,8 @@
 				name: 'invoices', kind: 'new', x: 80, y: 490, columns: [
 					{ name: 'id', type: 'char(36)', key: 'PK' },
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', note: 'ON DELETE CASCADE · svaki račun pripada ponudi' },
-					{ name: 'raster_service_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE CASCADE · račun usluge · null = ostali računi ponude' },
-					{ name: 'type', type: 'varchar(20)', note: 'enum: service | other · service ⇔ raster_service_id postavljen' },
+					{ name: 'service_booking_id', type: 'char(36)', key: 'FK', nullable: true, note: 'ON DELETE CASCADE · račun usluge · null = ostali računi ponude' },
+					{ name: 'type', type: 'varchar(20)', note: 'enum: service | other · service ⇔ service_booking_id postavljen' },
 					{ name: 'status', type: 'varchar(20)', note: 'enum: new | completed · default new' },
 					{ name: 'note', type: 'varchar(2500)', nullable: true, note: 'napomena iz modala, vidi se u Financijama' },
 					{ name: 'uploaded_by_user_id', type: 'char(36)', key: 'FK', nullable: true, references: 'users', note: 'ON DELETE SET NULL' },
@@ -505,13 +498,12 @@
 			{ from: 'offer_groups.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
 			{ from: 'offer_days.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one' },
 			{ from: 'invoices.offer_id', to: 'offers.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', side: 'left' },
-			{ from: 'timelines.offer_group_id', to: 'offer_groups.id', fromEnd: 'zeroOrOne', toEnd: 'one', label: 'hasOne' },
-			{ from: 'offer_group_drivers.offer_group_id', to: 'offer_groups.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany', side: 'right', elbowShift: -14 },
-			{ from: 'timeline_items.timeline_id', to: 'timelines.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
+			{ from: 'offer_group_drivers.offer_group_id', to: 'offer_groups.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
+			{ from: 'timeline_items.offer_group_id', to: 'offer_groups.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
 			{ from: 'offer_day_items.offer_day_id', to: 'offer_days.id', fromEnd: 'many', toEnd: 'one', label: 'hasMany' },
-			{ from: 'raster_services.offer_day_item_id', to: 'offer_day_items.id', fromEnd: 'zeroOrOne', toEnd: 'zeroOrOne', label: 'hasOne', isOptional: true },
-			{ from: 'timeline_items.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true },
-			{ from: 'invoices.raster_service_id', to: 'raster_services.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'hasMany', isOptional: true },
+			{ from: 'service_bookings.offer_day_item_id', to: 'offer_day_items.id', fromEnd: 'zeroOrOne', toEnd: 'zeroOrOne', label: 'hasOne', isOptional: true },
+			{ from: 'timeline_items.service_booking_id', to: 'service_bookings.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true },
+			{ from: 'invoices.service_booking_id', to: 'service_bookings.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'hasMany', isOptional: true },
 			{ from: 'timeline_item_tour_guide.timeline_item_id', to: 'timeline_items.id', fromEnd: 'many', toEnd: 'one', label: 'belongsToMany' },
 			{ from: 'timeline_item_tour_guide.tour_guide_id', to: 'tour_guides.id', fromEnd: 'many', toEnd: 'one', side: 'right' },
 			{ from: 'timeline_items.activity_id', to: 'activities.id', fromEnd: 'many', toEnd: 'zeroOrOne', label: 'belongsTo', isOptional: true },
