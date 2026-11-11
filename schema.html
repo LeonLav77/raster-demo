@@ -311,7 +311,7 @@
 			</div>
 			<div class="note-card">
 				<h3>Status po busu</h3>
-				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Kad se status busa razlikuje od <code>service_bookings.status</code>, Raster uz uslugu ispisuje "Grupa X – drugačiji status".</p>
+				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Usluga nema zaseban status na <code>service_bookings</code>: status postoji samo po busu.</p>
 			</div>
 			<div class="note-card">
 				<h3>IN / OUT cijene</h3>
@@ -319,7 +319,7 @@
 			</div>
 			<div class="note-card">
 				<h3>Raster usluga: <code>service_bookings</code></h3>
-				<p>Jedan red po usluzi ponude, zajednički za sve grupe: status, IN / OUT, najava partneru i računi usluge. Stavke usluga na timelineu vise na tom redu, pa red mora postojati za svaku uslugu koja je na timelineu. <code>offer_change</code> (added / removed / changed) boja redak na rasteru kad se ponuda promijeni. <code>item_snapshot</code> se puni kod kreiranja reda i osvježava kod svake izmjene stavke ponude, pa je uvijek zadnja verzija stavke. <code>note</code> je interna napomena uz rezervaciju. <strong>Brisanje usluge:</strong> <code>deleting</code> hook na <code>OfferDayItem</code> — ako ponuda ima grupe, <code>offer_day_item_id</code> postaje null, a <code>item_snapshot</code> čuva zadnju verziju stavke; raster je i dalje prikazuje kao "Obrisana usluga" radi poziva i storna. Ako ponuda nema grupa, red se briše zajedno sa stavkom (CASCADE na njegove stavke timelinea i račune). <code>offer_id</code> zato stoji na tablici.</p>
+				<p>Jedan red po usluzi ponude, zajednički za sve grupe: IN / OUT, najava partneru i računi usluge. Stavke usluga na timelineu vise na tom redu, pa red mora postojati za svaku uslugu koja je na timelineu. <code>offer_change</code> (added / removed / changed) boja redak na rasteru kad se ponuda promijeni. <code>item_snapshot</code> se puni kod kreiranja reda i osvježava kod svake izmjene stavke ponude, pa je uvijek zadnja verzija stavke. <code>note</code> je interna napomena uz rezervaciju. <strong>Brisanje usluge:</strong> <code>deleting</code> hook na <code>OfferDayItem</code> — ako ponuda ima grupe, <code>offer_day_item_id</code> postaje null, a <code>item_snapshot</code> čuva zadnju verziju stavke; raster je i dalje prikazuje kao "Obrisana usluga" radi poziva i storna. Ako ponuda nema grupa, red se briše zajedno sa stavkom (CASCADE na njegove stavke timelinea i račune). <code>offer_id</code> zato stoji na tablici.</p>
 			</div>
 			<div class="note-card">
 				<h3>Financije: <code>invoices</code></h3>
@@ -331,7 +331,7 @@
 			</div>
 			<div class="note-card">
 				<h3>Najave</h3>
-				<p><strong>Najava vodiču</strong> (po grupi, <code>offer_groups.announced_at</code>): timeline PDF + <code>offer_groups.notes</code> + vaučeri svih usluga grupe u privitku. <strong>Najava partneru</strong> (<code>service_bookings.partner_announced_at</code>): tekstualni sažetak usluge iz timelinea uz molbu za pisanu potvrdu, bez vaučera. Šalje se s Rastera usluga, jednom po usluzi za sve grupe. Slanjem se status usluge automatski postavlja na "Najavljeno"; inače se status mijenja ručno. Sadržaj po grupi: dan i vrijeme, broj gostiju (+ vodič + vozač), vodič, vozač; uz to slobodni tekst. Slobodni tekst se sprema u <code>service_bookings.partner_announcement_text</code>.</p>
+				<p><strong>Najava vodiču</strong> (po grupi, <code>offer_groups.announced_at</code>): timeline PDF + <code>offer_groups.notes</code> + vaučeri svih usluga grupe u privitku. <strong>Najava partneru</strong> (<code>service_bookings.partner_announced_at</code>): tekstualni sažetak usluge iz timelinea uz molbu za pisanu potvrdu, bez vaučera. Šalje se s Rastera usluga, jednom po usluzi za sve grupe. Je li usluga najavljena vidi se po <code>partner_announced_at</code>, bez posebnog statusa. Sadržaj po grupi: dan i vrijeme, broj gostiju (+ vodič + vozač), vodič, vozač; uz to slobodni tekst. Slobodni tekst se sprema u <code>service_bookings.partner_announcement_text</code>.</p>
 			</div>
 		</div>
 	</main>
@@ -436,7 +436,6 @@
 					{ name: 'offer_id', type: 'char(36)', key: 'FK', references: 'offers' },
 					{ name: 'offer_day_item_id', type: 'char(36)', key: 'FK UQ', nullable: true, note: 'ON DELETE SET NULL · jedna usluga = jedan red · null = obrisana usluga' },
 					{ name: 'item_snapshot', type: 'json', nullable: true, note: 'kopija stavke ponude · puni se kod kreiranja, osvježava kod svake izmjene stavke' },
-					{ name: 'status', type: 'varchar(20)', note: 'enum: pending | reserved | announced | cancelled · default pending' },
 					{ name: 'analytics_price_in', type: 'decimal(10,2)', nullable: true, note: 'IN · po pax · stvarna nabavna (analitika)' },
 					{ name: 'analytics_price_out', type: 'decimal(10,2)', nullable: true, note: 'OUT · po pax · stvarna prodajna (analitika)' },
 					{ name: 'offer_change', type: 'varchar(20)', nullable: true, note: 'enum: added | removed | changed · boja retka' },
