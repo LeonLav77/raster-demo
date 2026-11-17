@@ -660,6 +660,14 @@
 
 		.ref-link:hover { color: var(--primary); }
 
+		.timeline-link {
+			color: var(--primary);
+			font-size: 12px;
+			text-decoration: none;
+		}
+
+		.timeline-link:hover { text-decoration: underline; }
+
 		.check {
 			display: inline-grid;
 			place-items: center;
@@ -1687,7 +1695,7 @@
 											<td class="col-vodic">Vodič</td>
 											<td class="col-price" title="Stvarna nabavna cijena (analitika) — uspoređuje se s nabavnom iz ponude (sivo) za ispravak kalkulacije">IN</td>
 											<td class="col-price" title="Stvarna prodajna cijena (analitika) — uspoređuje se s prodajnom iz ponude (sivo) za ispravak kalkulacije">OUT</td>
-											<td class="col-status">Status usluge</td>
+											<td class="col-status" title="Izračunata vrijednost, ne sprema se">Status usluge</td>
 											<td class="col-najava">Najava partneru</td>
 											<td class="col-racun">Račun usluga</td>
 										</tr>
@@ -1701,6 +1709,7 @@
 								<tr>
 									<td class="nowrap">
 										<a href="#" class="ref-link" @click.prevent="openItinerary(offer)" x-text="offer.ref"></a>
+										<div><a href="#" class="timeline-link" title="Otvori timeline ponude" @click.prevent="openTimeline(offer)">Timeline</a></div>
 									</td>
 									<td style="min-width: 170px;">
 										<template x-for="hotel in offer.hotels" :key="hotel.name">
@@ -1726,20 +1735,13 @@
 									<td>
 										<div class="group-list">
 											<template x-for="group in groupsOf(offer)" :key="group.id">
-												<div class="group-chip-wrap">
-													<button type="button" class="group-chip" :title="driverContactsOf(group)" @click="openGroupModal(offer, group)">
-														<span class="fw-semibold"><i class="fa-solid fa-people-group"></i> <span x-text="group.name"></span></span>
-														<span class="muted fs-sm" x-show="group.drivers.length" x-text="driverNamesOf(group)"></span>
-														<span class="no-driver fs-sm" x-show="group.drivers.length === 0"><i class="fa-solid fa-triangle-exclamation"></i> Bez vozača</span>
-													</button>
-													<button type="button" class="group-remove" :title="'Obriši ' + group.name" @click="removeGroup(offer, group)">
-														<i class="fa-solid fa-xmark"></i>
-													</button>
-												</div>
+												<button type="button" class="group-chip" :title="driverContactsOf(group)" @click="openGroupModal(offer, group)">
+													<span class="fw-semibold"><i class="fa-solid fa-people-group"></i> <span x-text="group.name"></span></span>
+													<span class="muted fs-sm" x-show="group.drivers.length" x-text="driverNamesOf(group)"></span>
+													<span class="no-driver fs-sm" x-show="group.drivers.length === 0"><i class="fa-solid fa-triangle-exclamation"></i> Bez vozača</span>
+												</button>
 											</template>
-											<button type="button" class="btn btn-xs btn-dashed" @click="openGroupModal(offer)">
-												<i class="fa-solid fa-plus"></i> Grupa
-											</button>
+											<span class="muted fs-sm" x-show="groupsOf(offer).length === 0" title="Grupe se dodaju na timelineu">—</span>
 										</div>
 									</td>
 									<td style="min-width: 140px;" title="Svi vodiči ponude — s usluga i aktivnosti, svih grupa">
@@ -1789,14 +1791,12 @@
 															:value="servicePriceOf(service, 'out')" @change="setServicePrice(service, 'out', $event.target.value)">
 													</td>
 													<td class="col-status">
-														<button type="button" class="badge status-toggle" :class="serviceStatus(service.id).class" @click.stop="openStatusMenu($event, service.id)">
-															<span x-text="serviceStatus(service.id).label"></span>
-															<i class="fa-solid fa-chevron-down" style="font-size: 9px"></i>
-														</button>
-														<template x-for="differingGroup in groupsWithDifferentStatus(offer, service.id)" :key="differingGroup.name">
-															<div class="status-difference calculated-value" :title="differingGroup.name + ': ' + differingGroup.statusLabel"
-																x-text="differingGroup.name + ' – drugačiji status'"></div>
-														</template>
+														<div class="calculated-value" title="Izračunato iz statusa po grupama (timeline) i najave partneru — mijenja se na timelineu">
+															<span class="badge" :class="serviceStatus(offer, service.id).class" x-text="serviceStatus(offer, service.id).label"></span>
+															<template x-for="groupStatus in mixedGroupStatusesOf(offer, service.id)" :key="groupStatus.name">
+																<div class="status-difference" x-text="groupStatus.name + ': ' + groupStatus.statusLabel"></div>
+															</template>
+														</div>
 													</td>
 													<td class="col-najava">
 														<button type="button" class="btn btn-xs btn-dashed nowrap" x-show="!service.isDeleted && isServiceOnTimeline(offer, service.id) && !partnerAnnouncedAtOf(offer, service.id)" @click="openPartnerAnnouncement(offer, service)">
@@ -1981,7 +1981,7 @@
 										<input type="text" maxlength="255" class="cell-input" placeholder="—" :disabled="!isTimelineEditable" x-model="row.note" @change="updateTimelineRow(row, 'note')">
 										<div>
 											<button type="button" class="badge status-toggle" x-show="timelineGroup && !row.isActivity" :class="timelineRowStatus(row).class"
-												:title="row.status ? 'Status samo za ovu grupu' : 'Prati status usluge iz rastera'" @click.stop="openStatusMenu($event, row.offerDayItemId, row.id)">
+												title="Status usluge za ovu grupu" @click.stop="openStatusMenu($event, row.offerDayItemId, row.id)">
 												<span x-text="timelineRowStatus(row).label"></span>
 												<i class="fa-solid fa-chevron-down" style="font-size: 9px"></i>
 											</button>
@@ -2168,7 +2168,7 @@
 		<div class="dropdown-menu" :class="{ 'is-open': statusMenu }"
 			:style="statusMenu ? { top: statusMenu.top + 'px', left: statusMenu.left + 'px' } : {}"
 			@click.outside="statusMenu = null" @keydown.escape.window="statusMenu = null" @scroll.window="statusMenu = null" @resize.window="statusMenu = null">
-			<template x-for="(status, key) in serviceStatuses" :key="key">
+			<template x-for="(status, key) in timelineRowStatuses" :key="key">
 				<button type="button" @click="chooseStatus(key)">
 					<span class="badge" :class="status.class" x-text="status.label"></span>
 					<i class="fa-solid fa-check" x-show="statusMenuSelectedKey === key"></i>
@@ -2232,7 +2232,7 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-light-danger" x-show="groupModal?.groupId" @click="deleteGroup()">
+						<button type="button" class="btn btn-light-danger" x-show="groupModal?.groupId && view === 'timeline'" @click="deleteGroup()">
 							<i class="fa-solid fa-trash"></i> Obriši
 						</button>
 						<span style="flex: 1"></span>
@@ -2341,6 +2341,13 @@
 		};
 
 		const DEFAULT_SERVICE_STATUS = 'pending';
+
+		/** A group sets only these on its timeline rows; "Najavljeno" on the raster comes from the sent partner announcement. */
+		const TIMELINE_ROW_STATUSES = {
+			'pending': SERVICE_STATUSES.pending,
+			'reserved': SERVICE_STATUSES.reserved,
+			'cancelled': SERVICE_STATUSES.cancelled,
+		};
 
 		/**
 		 * Open questions collected while building the prototype; fill in `answer` once decided.
@@ -2595,8 +2602,7 @@
 				statusFilter: '',
 				toast: null,
 				toastTimer: null,
-				serviceStatuses: SERVICE_STATUSES,
-				serviceStatusById: readStoredJson('raster-prototype-service-statuses'),
+				timelineRowStatuses: TIMELINE_ROW_STATUSES,
 				servicePricesById: readStoredJson('raster-prototype-service-prices'),
 				financeFilesByOffer: readStoredJson('raster-prototype-finance-files'),
 				invoiceModal: null,
@@ -2656,14 +2662,10 @@
 					this.$watch('selectedOfferId', () => this.timelineGroupId = null);
 				},
 
-				/** The najava partneru tab writes the sent date and status to storage; pick them up without a reload. */
+				/** The najava partneru tab writes the sent date to storage; pick it up without a reload. */
 				reloadChangedStorage(key) {
 					if (key === 'raster-prototype-timeline-items') {
 						this.timelineItemsByOffer = readStoredJson(key);
-					}
-
-					if (key === 'raster-prototype-service-statuses') {
-						this.serviceStatusById = readStoredJson(key);
 					}
 				},
 
@@ -2697,6 +2699,12 @@
 					window.scrollTo({ top: 0 });
 				},
 
+				openTimeline(offer) {
+					this.selectedOfferId = offer.id;
+					this.setView('timeline');
+					window.scrollTo({ top: 0 });
+				},
+
 				/** Raster usluge are copies of the offer's service itinerary items, in date order. */
 				servicesOf(offer) {
 					return offer.days.flatMap(day => day.items
@@ -2727,10 +2735,6 @@
 					return { count: offer.contingentPax, source: 'kontingent' };
 				},
 
-				serviceStatusKey(serviceId) {
-					return this.serviceStatusById[serviceId] || DEFAULT_SERVICE_STATUS;
-				},
-
 				/** IN/OUT are analytical prices entered per usluga (empty until entered), compared with the offer's prices to fix the calculation. */
 				servicePriceOf(service, priceType) {
 					return this.servicePricesById[service.id]?.[priceType] ?? '';
@@ -2750,13 +2754,40 @@
 					writeStoredJson('raster-prototype-service-prices', this.servicePricesById);
 				},
 
-				serviceStatus(serviceId) {
-					return SERVICE_STATUSES[this.serviceStatusKey(serviceId)];
+				/** Service rows of the usluga in all groups of the offer. */
+				serviceRowsOf(offer, offerDayItemId) {
+					return this.timelineItemsOf(offer).filter(row => row.offerDayItemId === offerDayItemId && !row.isActivity);
 				},
 
-				/** A timeline row without its own status follows the usluga status from the raster. */
+				/**
+				 * Status usluge is calculated, never stored: all groups cancelled → Stornirano; partner announcement sent → Najavljeno;
+				 * every group that isn't cancelled reserved → Rezervirano; otherwise (or not on any timeline yet) → Neobrađeno.
+				 */
+				serviceStatusKey(offer, offerDayItemId) {
+					const rowStatusKeys = this.serviceRowsOf(offer, offerDayItemId).map(row => this.timelineRowStatusKey(row));
+					const activeStatusKeys = rowStatusKeys.filter(statusKey => statusKey !== 'cancelled');
+
+					if (rowStatusKeys.length === 0) {
+						return DEFAULT_SERVICE_STATUS;
+					}
+
+					if (activeStatusKeys.length === 0) {
+						return 'cancelled';
+					}
+
+					if (this.partnerAnnouncedAtOf(offer, offerDayItemId)) {
+						return 'announced';
+					}
+
+					return activeStatusKeys.every(statusKey => statusKey === 'reserved') ? 'reserved' : DEFAULT_SERVICE_STATUS;
+				},
+
+				serviceStatus(offer, offerDayItemId) {
+					return SERVICE_STATUSES[this.serviceStatusKey(offer, offerDayItemId)];
+				},
+
 				timelineRowStatusKey(row) {
-					return row.status || this.serviceStatusKey(row.offerDayItemId);
+					return row.status || DEFAULT_SERVICE_STATUS;
 				},
 
 				timelineRowStatus(row) {
@@ -2764,22 +2795,24 @@
 				},
 
 				/**
-				 * Groups with at least one row of the usluga whose status differs from the raster status.
+				 * Each group's status of the usluga, but only when the groups don't all have the same one.
 				 *
 				 * @returns {Array<{ name: string, statusLabel: string }>}
 				 */
-				groupsWithDifferentStatus(offer, offerDayItemId) {
-					const serviceStatusKey = this.serviceStatusKey(offerDayItemId);
-					const differingRows = this.timelineItemsOf(offer)
-						.filter(row => row.offerDayItemId === offerDayItemId && !row.isActivity && this.timelineRowStatusKey(row) !== serviceStatusKey);
+				mixedGroupStatusesOf(offer, offerDayItemId) {
+					const rows = this.serviceRowsOf(offer, offerDayItemId);
+
+					if (new Set(rows.map(row => this.timelineRowStatusKey(row))).size < 2) {
+						return [];
+					}
 
 					return this.groupsOf(offer)
-						.map(group => ({ group, differingRow: differingRows.find(row => row.groupId === group.id) }))
-						.filter(({ differingRow }) => differingRow)
-						.map(({ group, differingRow }) => ({ name: group.name, statusLabel: this.timelineRowStatus(differingRow).label }));
+						.map(group => ({ group, groupRow: rows.find(row => row.groupId === group.id) }))
+						.filter(({ groupRow }) => groupRow)
+						.map(({ group, groupRow }) => ({ name: group.name, statusLabel: this.timelineRowStatus(groupRow).label }));
 				},
 
-				/** `rowId` is set when the menu was opened from a timeline row, so the choice applies only to that group's row. */
+				/** Opened from a timeline row; the choice applies only to that group's row. */
 				openStatusMenu(event, serviceId, rowId = null) {
 					if (this.statusMenu?.serviceId === serviceId && this.statusMenu?.rowId === rowId) {
 						this.statusMenu = null;
@@ -2804,22 +2837,17 @@
 						return null;
 					}
 
-					return this.statusMenuRow ? this.timelineRowStatusKey(this.statusMenuRow) : this.serviceStatusKey(this.statusMenu.serviceId);
+					return this.statusMenuRow ? this.timelineRowStatusKey(this.statusMenuRow) : null;
 				},
 
 				chooseStatus(status) {
 					if (this.statusMenuRow) {
 						this.setTimelineRowStatus(this.statusMenuRow, status);
-
-						return;
 					}
-
-					this.setServiceStatus(this.statusMenu.serviceId, status);
 				},
 
-				/** Picking the raster status again clears the override, so the row follows the raster from then on. */
 				setTimelineRowStatus(row, status) {
-					row.status = status === this.serviceStatusKey(row.offerDayItemId) ? null : status;
+					row.status = status;
 					this.statusMenu = null;
 					this.persistTimeline();
 				},
@@ -2934,18 +2962,6 @@
 
 					return twoDigits(createdAtDate.getDate()) + '.' + twoDigits(createdAtDate.getMonth() + 1) + '. '
 						+ twoDigits(createdAtDate.getHours()) + ':' + twoDigits(createdAtDate.getMinutes());
-				},
-
-				/** Group rows that already had the new status stop overriding it and follow the raster again. */
-				setServiceStatus(serviceId, status) {
-					this.serviceStatusById = { ...this.serviceStatusById, [serviceId]: status };
-					this.statusMenu = null;
-					writeStoredJson('raster-prototype-service-statuses', this.serviceStatusById);
-					Object.values(this.timelineItemsByOffer)
-						.flat()
-						.filter(row => row.offerDayItemId === serviceId && row.status === status)
-						.forEach(row => row.status = null);
-					this.persistTimeline();
 				},
 
 				toggleTimelineDay(date) {

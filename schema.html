@@ -311,7 +311,7 @@
 			</div>
 			<div class="note-card">
 				<h3>Status po busu</h3>
-				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Usluga nema zaseban status na <code>service_bookings</code>: status postoji samo po busu.</p>
+				<p><code>timeline_items.status</code> nije nullable: svaka stavka (usluga i aktivnost) ima svoj status po busu, zadano <code>pending</code> (prvi u enumu). Usluga nema zaseban status na <code>service_bookings</code>: status usluge na Rasteru je izračunata vrijednost (ne sprema se, mijenja se samo kroz statuse na timelineu): sve grupe stornirane → Stornirano; poslana najava partneru (<code>partner_announced_at</code>) → Najavljeno; sve grupe koje nisu stornirane rezervirane → Rezervirano; inače (ili usluga nije ni na jednom timelineu) → Neobrađeno. Kad grupe imaju različite statuse, Raster ispod ispisuje status svake grupe.</p>
 			</div>
 			<div class="note-card">
 				<h3>IN / OUT cijene</h3>

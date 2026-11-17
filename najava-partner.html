@@ -206,10 +206,8 @@
 		const DELETED_SERVICES_KEY = 'raster-prototype-deleted-services';
 		const GROUPS_KEY = 'raster-prototype-groups';
 		const TIMELINE_ITEMS_KEY = 'raster-prototype-timeline-items';
-		const SERVICE_STATUSES_KEY = 'raster-prototype-service-statuses';
 		const FREE_TEXTS_KEY = 'raster-prototype-partner-announcement-texts';
 
-		const ANNOUNCED_STATUS = 'announced';
 		const WEEKDAYS = ['nedjelja', 'ponedjeljak', 'utorak', 'srijeda', 'četvrtak', 'petak', 'subota'];
 
 		function readStoredJson(key) {
@@ -344,20 +342,16 @@
 			return block;
 		}
 
-		/** Marks the usluga's rows in every group as announced and sets its status to "Najavljeno", like the raster used to. */
+		/** Marks the usluga's rows in every group as announced; the raster then calculates its status as "Najavljeno". */
 		function markAsSent(offer, serviceId) {
 			const sentAt = new Date().toISOString();
 			const timelineItemsByOffer = readStoredJson(TIMELINE_ITEMS_KEY);
-			const serviceStatuses = readStoredJson(SERVICE_STATUSES_KEY);
 
 			timelineItemsByOffer[offer.id] = (timelineItemsByOffer[offer.id] || []).map(row => row.offerDayItemId !== serviceId ? row : {
 				...row,
 				partnerAnnouncedAt: sentAt,
-				status: row.status === ANNOUNCED_STATUS ? null : row.status,
 			});
-			serviceStatuses[serviceId] = ANNOUNCED_STATUS;
 			writeStoredJson(TIMELINE_ITEMS_KEY, timelineItemsByOffer);
-			writeStoredJson(SERVICE_STATUSES_KEY, serviceStatuses);
 
 			return sentAt;
 		}
